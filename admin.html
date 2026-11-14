@@ -3,286 +3,473 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>STL — لوحة الإدارة</title>
+<title>STL — نظام إدارة التوصيل المتكامل</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
-    body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
-    /* تخصيص شريط التمرير */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    /* منع تمرير الخلفية عند فتح القوائم */
+    .no-scroll { overflow: hidden; }
 </style>
 </head>
-<body class="flex h-screen overflow-hidden text-slate-800">
+<body class="text-slate-800 h-screen overflow-hidden flex flex-col md:flex-row">
 
-    <!-- القائمة الجانبية (Sidebar) -->
-    <aside class="w-64 bg-[#0f172a] text-slate-300 flex flex-col shadow-2xl z-20">
-        <!-- الشعار -->
-        <div class="h-16 flex items-center px-6 border-b border-slate-800">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                    <span class="text-white font-black text-xl">S</span>
+<!-- حاوية التطبيق الرئيسية -->
+<div id="app" class="flex-1 w-full h-full overflow-y-auto"></div>
+
+<!-- شريط التنقل السفلي للعميل -->
+<nav id="customer-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50 hidden">
+    <div class="max-w-md mx-auto flex justify-around items-center h-16">
+        <button onclick="navCustomer('home')" id="nav-home" class="flex flex-col items-center w-full text-gray-400 hover:text-red-600 transition-colors">
+            <i data-lucide="home" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-bold">الرئيسية</span>
+        </button>
+        <button onclick="navCustomer('create')" id="nav-create" class="flex flex-col items-center w-full text-gray-400 hover:text-red-600 transition-colors">
+            <div class="bg-red-600 text-white p-3 rounded-full -mt-6 shadow-lg shadow-red-200 border-4 border-white">
+                <i data-lucide="plus" class="w-6 h-6"></i>
+            </div>
+        </button>
+        <button onclick="navCustomer('track')" id="nav-track" class="flex flex-col items-center w-full text-gray-400 hover:text-red-600 transition-colors">
+            <i data-lucide="map-pin" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-bold">تتبع</span>
+        </button>
+        <button onclick="navCustomer('wallet')" id="nav-wallet" class="flex flex-col items-center w-full text-gray-400 hover:text-red-600 transition-colors">
+            <i data-lucide="wallet" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-bold">محفظة</span>
+        </button>
+    </div>
+</nav>
+
+<!-- إشعارات (Toast) -->
+<div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-2xl z-[100] transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2">
+    <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+    <span id="toast-msg">تم بنجاح</span>
+</div>
+
+<script>
+// // --- إدارة البيانات (تخزين محلي) ---
+const DB = {
+    get: (k, d) => { try { return JSON.parse(localStorage.getItem('stl_'+k)) ?? d } catch { return d } },
+    set: (k, v) => localStorage.setItem('stl_'+k, JSON.stringify(v))
+};
+
+// بيانات تجريبية أولية (لكي تظهر لوحة الإدارة مليئة)
+const defaultShipments = [
+    {trackingNumber: 'STL-9821', name: 'محمد أحمد', phone: '0991112233', city: 'DAM', address: 'المزة', weight: 2, cod: 150000, cost: {total: 25000}, status: 'delivered', events: [{status: 'created', at: new Date(Date.now()-86400000).toISOString()}, {status: 'delivered', at: new Date().toISOString()}]},
+    {trackingNumber: 'STL-9822', name: 'عمر خالد', phone: '0982223344', city: 'ALP', address: 'الفرقان', weight: 5, cod: 0, cost: {total: 45000}, status: 'in_transit', events: [{status: 'created', at: new Date(Date.now()-3600000).toISOString()}, {status: 'in_transit', at: new Date().toISOString()}]}
+];
+
+let state = {
+    role: 'customer', // customer | admin
+    screen: 'home',
+    user: DB.get('user', null),
+    shipments: DB.get('shipments', defaultShipments),
+    transactions: DB.get('transactions', []),
+    balance: DB.get('balance', 0),
+    codPending: DB.get('codPending', 0),
+    selectedCity: null,
+    tempQuote: null,
+    tempData: null
+};
+
+// إذا كان هناك شحنات افتراضية، احفظها
+if(!DB.get('shipments', null)) DB.set('shipments', state.shipments);
+
+const CITIES = [
+    {code:'DAM',name:'دمشق'}, {code:'RIF',name:'ريف دمشق'}, {code:'ALP',name:'حلب'},
+    {code:'HOM',name:'حمص'}, {code:'HAM',name:'حماة'}, {code:'LAT',name:'اللاذقية'},
+    {code:'TAR',name:'طرطوس'}, {code:'IDL',name:'إدلب'}, {code:'DEZ',name:'دير الزور'}
+];
+
+const STATUS_MAP = {
+    created: {label:'تم الإنشاء', color:'bg-blue-100 text-blue-700', icon:'file-text'},
+    picked_up: {label:'تم الاستلام', color:'bg-yellow-100 text-yellow-700', icon:'package'},
+    in_transit: {label:'قيد النقل', color:'bg-indigo-100 text-indigo-700', icon:'truck'},
+    out_for_delivery: {label:'قيد التوصيل', color:'bg-pink-100 text-pink-700', icon:'navigation'},
+    delivered: {label:'تم التسليم', color:'bg-green-100 text-green-700', icon:'check-circle'}
+};
+
+function toast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.innerHTML = `<i data-lucide="${type==='success'?'check-circle':'alert-circle'}" class="w-5 h-5 ${type==='success'?'text-green-400':'text-red-400'}"></i><span>${msg}</span>`;
+    t.classList.remove('opacity-0');
+    setTimeout(() => t.classList.add('opacity-0'), 3000);
+    lucide.createIcons();
+}
+
+function navCustomer(screen) {
+    state.screen = screen;
+    render();
+}
+
+function genTN() {
+    let s = 'STL-'; for(let i=0;i<5;i++) s += Math.floor(Math.random()*10); return s;
+}
+
+function calcPrice(cityCode, weight, cod) {
+    const base = 15000;
+    const weightFee = Math.ceil(weight) * 4000;
+    const codFee = cod * 0.02;
+    return { base, weightFee, codFee, total: base + weightFee + codFee };
+}
+
+// دوال العميل
+function renderLogin() {
+    document.getElementById('customer-nav').classList.add('hidden');
+    document.getElementById('app').innerHTML = `
+        <div class="min-h-screen flex flex-col justify-center p-6 max-w-md mx-auto fade-in bg-white">
+            <div class="text-center mb-10">
+                <div class="w-24 h-24 bg-red-600 rounded-3xl mx-auto flex items-center justify-center shadow-xl shadow-red-200 mb-6 transform rotate-3">
+                    <span class="text-white font-black text-4xl transform -rotate-3">STL</span>
                 </div>
-                <span class="text-white font-black text-xl tracking-wider">STL</span>
+                <h1 class="text-3xl font-black text-gray-800">أهلاً بك</h1>
+                <p class="text-gray-500 mt-2">سجل دخولك لمتابعة شحناتك</p>
+            </div>
+            <div class="space-y-4">
+                <input type="tel" id="login-phone" value="0999111111" class="w-full bg-gray-50 border border-gray-200 rounded-2xl py-4 px-4 outline-none focus:border-red-500 font-bold" placeholder="رقم الهاتف">
+                <button onclick="doLogin()" class="w-full bg-red-600 text-white font-bold text-lg rounded-2xl py-4 shadow-lg active:scale-95 transition-transform">تسجيل الدخول</button>
             </div>
         </div>
+    `;
+}
 
-        <!-- الروابط -->
-        <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-            <a href="#" class="flex items-center gap-3 bg-blue-600 text-white px-4 py-3 rounded-xl transition-all shadow-lg shadow-blue-900/50">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                <span class="font-bold text-sm">لوحة التحكم</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
-                <i data-lucide="plus-circle" class="w-5 h-5 group-hover:text-blue-400"></i>
-                <span class="font-semibold text-sm">إنشاء شحنة</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
-                <i data-lucide="package" class="w-5 h-5 group-hover:text-blue-400"></i>
-                <span class="font-semibold text-sm">إدارة الشحنات</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
-                <i data-lucide="search" class="w-5 h-5 group-hover:text-blue-400"></i>
-                <span class="font-semibold text-sm">تتبع شحنة</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
-                <i data-lucide="network" class="w-5 h-5 group-hover:text-blue-400"></i>
-                <span class="font-semibold text-sm">شبكة النقاط</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
-                <i data-lucide="map-pin" class="w-5 h-5 group-hover:text-blue-400"></i>
-                <span class="font-semibold text-sm">الخريطة</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
-                <i data-lucide="dollar-sign" class="w-5 h-5 group-hover:text-blue-400"></i>
-                <span class="font-semibold text-sm">الأسعار</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
-                <i data-lucide="bar-chart-2" class="w-5 h-5 group-hover:text-blue-400"></i>
-                <span class="font-semibold text-sm">التقارير المالية</span>
-            </a>
+function doLogin() {
+    const phone = document.getElementById('login-phone').value;
+    if(!phone) return toast('أدخل رقم الهاتف', 'error');
+    state.user = { name: 'أبو محمد', phone: phone, role: 'customer' };
+    DB.set('user', state.user);
+    state.screen = 'home'; render();
+}
+
+function logout() {
+    state.user = null; DB.set('user', null); render();
+}
+
+function renderCustomerHome() {
+    document.getElementById('customer-nav').classList.remove('hidden');
+    let active = state.shipments.filter(s => s.status !== 'delivered').length;
+    
+    let shipmentsHtml = state.shipments.slice(0, 5).map(s => `
+        <div onclick="viewTrack('${s.trackingNumber}')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-3 cursor-pointer">
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full ${STATUS_MAP[s.status].color} flex items-center justify-center"><i data-lucide="${STATUS_MAP[s.status].icon}" class="w-5 h-5"></i></div>
+                    <div><div class="font-bold text-gray-800 font-mono text-sm">${s.trackingNumber}</div><div class="text-xs text-gray-500 mt-1">إلى: ${s.name}</div></div>
+                </div>
+                <span class="text-xs font-bold px-2 py-1 rounded-lg ${STATUS_MAP[s.status].color}">${STATUS_MAP[s.status].label}</span>
+            </div>
+            <div class="border-t border-gray-50 pt-2 flex justify-between text-sm font-black"><span>${s.cost.total.toLocaleString()} ل.س</span></div>
         </div>
+    `).join('');
 
-        <!-- حساب المدير -->
-        <div class="p-4 border-t border-slate-800">
-            <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors">
-                <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white">
-                    <i data-lucide="user" class="w-5 h-5"></i>
+    if(!shipmentsHtml) shipmentsHtml = `<div class="text-center py-10 text-gray-400 font-bold">لا توجد شحنات</div>`;
+
+    document.getElementById('app').innerHTML = `
+        <div class="max-w-md mx-auto pb-24">
+            <header class="glass sticky top-0 z-40 px-5 py-4 flex justify-between items-center border-b border-gray-100">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white font-black text-xl">S</div>
+                    <div><h1 class="font-bold text-gray-800 text-lg">STL Express</h1><p class="text-[10px] text-gray-500 font-bold">مرحباً، ${state.user.name}</p></div>
                 </div>
-                <div>
-                    <p class="text-white font-bold text-sm">مدير النظام</p>
-                    <p class="text-xs text-slate-400">admin@stl.sy</p>
+                <div class="flex gap-2">
+                    <button onclick="switchRole('admin')" class="bg-slate-800 text-white px-3 py-2 rounded-xl text-xs font-bold shadow-lg">لوحة الإدارة</button>
+                    <button onclick="logout()" class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-500"><i data-lucide="log-out" class="w-5 h-5"></i></button>
                 </div>
+            </header>
+            <div class="p-5 fade-in">
+                <div class="bg-gradient-to-br from-red-600 to-red-800 rounded-3xl p-6 text-white shadow-xl mb-6 relative overflow-hidden">
+                    <p class="text-red-100 font-bold text-sm mb-1">الشحنات النشطة</p>
+                    <h2 class="text-5xl font-black mb-4">${active}</h2>
+                    <button onclick="navCustomer('create')" class="w-full bg-white text-red-600 font-bold rounded-xl py-3 text-sm shadow-md flex items-center justify-center gap-2"><i data-lucide="plus"></i> شحنة جديدة</button>
+                </div>
+                <h3 class="font-black text-gray-800 text-lg mb-4">أحدث الشحنات</h3>
+                ${shipmentsHtml}
             </div>
         </div>
-    </aside>
+    `;
+    updateNav('home'); lucide.createIcons();
+    }الكود سيكمل هنا في الجزء الثاني
+    // --- استكمال واجهات العميل ---
+function renderCustomerCreate() {
+    document.getElementById('customer-nav').classList.remove('hidden');
+    updateNav('create');
+    const chips = CITIES.map(c => `<button onclick="selectCity('${c.code}')" id="city-${c.code}" class="city-chip px-4 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-white text-gray-600 whitespace-nowrap">${c.name}</button>`).join('');
+    document.getElementById('app').innerHTML = `
+        <div class="max-w-md mx-auto pb-24 fade-in">
+            <header class="glass sticky top-0 z-40 px-5 py-4 flex items-center border-b border-gray-100"><h1 class="font-bold text-gray-800 text-lg mx-auto">إنشاء شحنة</h1></header>
+            <div class="p-5">
+                <div class="bg-white p-5 rounded-3xl border border-gray-100 mb-5">
+                    <input type="text" id="f-name" placeholder="اسم المستلم" class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 mb-3 outline-none text-sm font-bold">
+                    <input type="tel" id="f-phone" placeholder="رقم الهاتف" class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 mb-4 outline-none text-sm font-bold text-left" dir="ltr">
+                    <div class="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">${chips}</div>
+                    <textarea id="f-address" rows="2" placeholder="العنوان الوصفي" class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 mt-4 outline-none text-sm font-bold resize-none"></textarea>
+                </div>
+                <div class="bg-white p-5 rounded-3xl border border-gray-100 mb-5 grid grid-cols-2 gap-3">
+                    <div><label class="text-xs font-bold text-gray-500">الوزن (كغ)</label><input type="number" id="f-weight" value="1" class="w-full bg-gray-50 rounded-xl py-3 px-4 font-bold text-center"></div>
+                    <div><label class="text-xs font-bold text-gray-500">الدفع (COD)</label><input type="number" id="f-cod" placeholder="0" class="w-full bg-gray-50 rounded-xl py-3 px-4 font-bold text-center"></div>
+                </div>
+                <button onclick="calcQuote()" class="w-full bg-gray-900 text-white font-bold text-lg rounded-2xl py-4">احسب التكلفة</button>
+                <div id="quote-result" class="mt-5 hidden"></div>
+            </div>
+        </div>
+    `;
+    if(state.selectedCity) selectCity(state.selectedCity);
+}
 
-    <!-- المحتوى الرئيسي -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+function selectCity(code) {
+    state.selectedCity = code;
+    document.querySelectorAll('.city-chip').forEach(el => el.classList.remove('bg-red-600', 'text-white', 'border-red-600'));
+    const active = document.getElementById('city-'+code);
+    if(active) active.classList.add('bg-red-600', 'text-white', 'border-red-600');
+}
+
+function calcQuote() {
+    const name = document.getElementById('f-name').value;
+    const phone = document.getElementById('f-phone').value;
+    const address = document.getElementById('f-address').value;
+    const weight = parseFloat(document.getElementById('f-weight').value) || 1;
+    const cod = parseFloat(document.getElementById('f-cod').value) || 0;
+    if(!name || !phone || !address || !state.selectedCity) return toast('أكمل البيانات', 'error');
+
+    const quote = calcPrice(state.selectedCity, weight, cod);
+    state.tempQuote = quote; state.tempData = { name, phone, address, weight, cod };
+    
+    const box = document.getElementById('quote-result');
+    box.classList.remove('hidden');
+    box.innerHTML = `<div class="bg-red-50 p-6 rounded-3xl border border-red-100 fade-in">
+        <div class="flex justify-between items-center pb-3 mb-3 border-b border-red-100"><span class="font-bold">الإجمالي</span><span class="font-black text-2xl text-red-600">${quote.total.toLocaleString()} ل.س</span></div>
+        <button onclick="submitShipment()" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl">تأكيد الشحنة</button>
+    </div>`;
+}
+
+function submitShipment() {
+    const tn = genTN();
+    const newShipment = {
+        trackingNumber: tn, ...state.tempData, city: state.selectedCity, cost: state.tempQuote, status: 'created',
+        events: [{status:'created', note:'تم الإنشاء', at: new Date().toISOString()}]
+    };
+    state.shipments.unshift(newShipment); DB.set('shipments', state.shipments);
+    if(newShipment.cod > 0) {
+        state.codPending += newShipment.cod; DB.set('codPending', state.codPending);
+        state.transactions.unshift({type:'COD معلق', note:tn, amount:newShipment.cod}); DB.set('transactions', state.transactions);
+    }
+    state.selectedCity = null; toast('تمت الإضافة بنجاح'); navCustomer('home');
+}
+
+function renderCustomerTrack() {
+    updateNav('track');
+    document.getElementById('app').innerHTML = `
+        <div class="max-w-md mx-auto pb-24 fade-in">
+            <header class="glass sticky top-0 px-5 py-4 border-b border-gray-100"><h1 class="font-bold text-lg mx-auto text-center">تتبع شحنة</h1></header>
+            <div class="p-5">
+                <div class="flex gap-2 mb-6">
+                    <input type="text" id="track-input" placeholder="STL-XXXXX" class="w-full bg-white border border-gray-200 rounded-2xl py-4 text-center font-mono font-bold">
+                    <button onclick="doTrack()" class="bg-gray-900 text-white px-6 rounded-2xl font-bold">تتبع</button>
+                </div>
+                <div id="track-result"></div>
+            </div>
+        </div>`;
+}
+
+function viewTrack(tn) { state.screen='track'; render(); document.getElementById('track-input').value=tn; doTrack(); }
+
+function doTrack() {
+    const tn = document.getElementById('track-input').value.trim().toUpperCase();
+    const s = state.shipments.find(x => x.trackingNumber === tn);
+    const res = document.getElementById('track-result');
+    if(!s) return res.innerHTML = `<div class="text-center text-red-600 font-bold p-5 bg-red-50 rounded-2xl">غير موجود</div>`;
+    
+    const timeline = s.events.map((e,i) => `
+        <div class="flex gap-4 relative mb-4">
+            <div class="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center shrink-0 z-10"><i data-lucide="check" class="w-4 h-4"></i></div>
+            <div><h4 class="font-bold text-sm">${e.note}</h4><p class="text-xs text-gray-500 mt-1">${new Date(e.at).toLocaleString('ar-SY')}</p></div>
+        </div>`).reverse().join('');
+
+    res.innerHTML = `<div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm mb-4"><h3 class="font-black text-xl mb-2">${s.trackingNumber}</h3><p class="text-sm text-gray-500">الوجهة: ${CITIES.find(c=>c.code===s.city)?.name}</p></div>
+    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">${timeline}</div>`;
+    lucide.createIcons();
+}
+
+function renderCustomerWallet() {
+    updateNav('wallet');
+    const txs = state.transactions.map(t => `<div class="bg-white p-4 rounded-xl mb-2 flex justify-between"><div><p class="font-bold text-sm">${t.type}</p><p class="text-xs text-gray-500">${t.note}</p></div><span class="font-bold text-green-600">${t.amount.toLocaleString()}</span></div>`).join('');
+    document.getElementById('app').innerHTML = `
+        <div class="max-w-md mx-auto pb-24 fade-in">
+            <header class="glass sticky top-0 px-5 py-4 border-b border-gray-100"><h1 class="font-bold text-lg mx-auto text-center">المحفظة</h1></header>
+            <div class="p-5">
+                <div class="bg-gray-900 rounded-3xl p-6 text-white mb-6 shadow-2xl">
+                    <p class="text-gray-400 text-sm mb-1">الرصيد المتاح</p>
+                    <h2 class="text-4xl font-black font-mono mb-4">${state.balance.toLocaleString()} <span class="text-sm text-gray-400">ل.س</span></h2>
+                    <div class="bg-white/10 p-3 rounded-xl"><p class="text-xs text-yellow-500">قيد التسوية (COD)</p><p class="font-bold font-mono text-yellow-500">${state.codPending.toLocaleString()} ل.س</p></div>
+                </div>
+                <h3 class="font-bold mb-3 px-2">السجل</h3>
+                ${txs || '<p class="text-center text-gray-400">فارغ</p>'}
+            </div>
+        </div>`;
+}
+
+function updateNav(screen) {
+    ['home','create','track','wallet'].forEach(s => {
+        const btn = document.getElementById('nav-'+s); if(!btn) return;
+        s===screen ? btn.classList.add('text-red-600') : btn.classList.remove('text-red-600');
+    });
+}
+
+// --- واجهة الإدارة (Admin) ---
+function switchRole(role) {
+    state.role = role;
+    if(role === 'admin') state.screen = 'admin_dashboard';
+    else state.screen = 'home';
+    render();
+}
+
+function renderAdmin() {
+    document.getElementById('customer-nav').classList.add('hidden'); // إخفاء شريط الموبايل
+    
+    // إحصائيات حية
+    const total = state.shipments.length;
+    const delivered = state.shipments.filter(s=>s.status==='delivered').length;
+    const pending = total - delivered;
+    const totalCOD = state.shipments.reduce((acc, s) => acc + (s.cod || 0), 0);
+    const revenue = state.shipments.reduce((acc, s) => acc + (s.cost?.total || 0), 0);
+
+    const isDash = state.screen === 'admin_dashboard';
+    const isShipments = state.screen === 'admin_shipments';
+
+    document.getElementById('app').innerHTML = `
+        <div class="flex h-full w-full bg-slate-50">
+            <!-- Sidebar (تتحول لشريط علوي في الموبايل) -->
+            <aside class="w-full md:w-64 bg-[#0f172a] text-slate-300 flex flex-col md:h-full shrink-0">
+                <div class="h-16 flex items-center justify-between px-6 border-b border-slate-800">
+                    <div class="flex items-center gap-3"><span class="text-white font-black text-xl">STL Admin</span></div>
+                    <button onclick="switchRole('customer')" class="md:hidden bg-slate-700 text-white px-3 py-1 rounded-lg text-xs">تطبيق العميل</button>
+                </div>
+                <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1 flex md:flex-col gap-2 md:gap-0 hide-scrollbar">
+                    <a href="#" onclick="state.screen='admin_dashboard'; render();" class="${isDash ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'} flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap"><i data-lucide="layout-dashboard" class="w-5 h-5"></i> لوحة التحكم</a>
+                    <a href="#" onclick="state.screen='admin_shipments'; render();" class="${isShipments ? 'bg-blue-600 text-white' : 'hover:bg-slate-800'} flex items-center gap-3 px-4 py-3 rounded-xl transition-all whitespace-nowrap"><i data-lucide="package" class="w-5 h-5"></i> إدارة الشحنات</a>
+                </div>
+                <div class="hidden md:block p-4 border-t border-slate-800">
+                    <button onclick="switchRole('customer')" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2"><i data-lucide="smartphone"></i> الذهاب لتطبيق العميل</button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="flex-1 flex flex-col h-full overflow-hidden">
+                <header class="h-16 bg-white border-b flex items-center justify-between px-4 md:px-8 shrink-0">
+                    <h1 class="text-lg font-black">${isDash ? 'لوحة التحكم' : 'إدارة الشحنات'}</h1>
+                </header>
+                <div class="flex-1 overflow-y-auto p-4 md:p-8">
+                    ${isDash ? renderAdminDashboardHTML(total, delivered, pending, totalCOD, revenue) : renderAdminShipmentsHTML()}
+                </div>
+            </main>
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+function renderAdminDashboardHTML(total, delivered, pending, totalCOD, revenue) {
+    return `
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-4 md:p-6 rounded-2xl border-r-4 border-blue-500 shadow-sm"><p class="text-xs md:text-sm font-bold text-slate-500 mb-2">إجمالي الشحنات</p><h3 class="text-2xl md:text-3xl font-black">${total}</h3></div>
+            <div class="bg-white p-4 md:p-6 rounded-2xl border-r-4 border-green-500 shadow-sm"><p class="text-xs md:text-sm font-bold text-slate-500 mb-2">تم التسليم</p><h3 class="text-2xl md:text-3xl font-black text-green-600">${delivered}</h3></div>
+            <div class="bg-white p-4 md:p-6 rounded-2xl border-r-4 border-yellow-500 shadow-sm"><p class="text-xs md:text-sm font-bold text-slate-500 mb-2">قيد الإجراء</p><h3 class="text-2xl md:text-3xl font-black text-yellow-600">${pending}</h3></div>
+            <div class="bg-white p-4 md:p-6 rounded-2xl border-r-4 border-red-500 shadow-sm"><p class="text-xs md:text-sm font-bold text-slate-500 mb-2">إجمالي COD</p><h3 class="text-xl md:text-2xl font-black text-red-600">${totalCOD.toLocaleString()} <span class="text-xs">ل.س</span></h3></div>
+        </div>
         
-        <!-- الشريط العلوي (Header) -->
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-10 shadow-sm">
-            <div>
-                <h1 class="text-xl font-black text-slate-800">لوحة التحكم</h1>
-                <p class="text-xs text-slate-500 font-semibold mt-0.5">نظرة عامة على الشبكة</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all active:scale-95">
-                    <i data-lucide="plus" class="w-4 h-4"></i> شحنة جديدة
-                </button>
-                <button class="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95">
-                    <i data-lucide="download" class="w-4 h-4"></i> تصدير
-                </button>
-            </div>
-        </header>
-
-        <!-- منطقة التمرير -->
-        <div class="flex-1 overflow-y-auto p-8">
-            
-            <!-- البطاقات الإحصائية (KPI Cards) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- إجمالي الشحنات -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-                    <div class="absolute right-0 top-0 h-full w-1 bg-blue-500"></div>
-                    <p class="text-sm font-bold text-slate-500 mb-2">إجمالي الشحنات</p>
-                    <div class="flex items-end justify-between">
-                        <h3 class="text-3xl font-black text-slate-800">6</h3>
-                        <span class="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">
-                            <i data-lucide="trending-up" class="w-3 h-3"></i> 1 مسلمة
-                        </span>
-                    </div>
-                </div>
-                
-                <!-- قيد التوصيل -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-                    <div class="absolute right-0 top-0 h-full w-1 bg-yellow-500"></div>
-                    <p class="text-sm font-bold text-slate-500 mb-2">قيد التوصيل</p>
-                    <div class="flex items-end justify-between">
-                        <h3 class="text-3xl font-black text-slate-800">5</h3>
-                        <span class="flex items-center gap-1 text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-lg">
-                            <i data-lucide="clock" class="w-3 h-3"></i> 1 في الطريق
-                        </span>
-                    </div>
-                </div>
-
-                <!-- مبالغ COD -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-                    <div class="absolute right-0 top-0 h-full w-1 bg-red-500"></div>
-                    <p class="text-sm font-bold text-slate-500 mb-2">مبالغ التحصيل (COD)</p>
-                    <div class="flex items-end justify-between">
-                        <h3 class="text-2xl font-black text-slate-800">230,000 <span class="text-sm">ل.س</span></h3>
-                        <span class="text-xs font-bold text-slate-400">3 شحنات</span>
-                    </div>
-                </div>
-
-                <!-- الإيرادات -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
-                    <div class="absolute right-0 top-0 h-full w-1 bg-green-500"></div>
-                    <p class="text-sm font-bold text-slate-500 mb-2">الإيرادات</p>
-                    <div class="flex items-end justify-between">
-                        <h3 class="text-2xl font-black text-slate-800">348,500 <span class="text-sm">ل.س</span></h3>
-                        <span class="text-xs font-bold text-slate-400">متوسط 58,083 ل.س</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- توزيع الحالات (الرسم البياني) -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm lg:col-span-2">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
-                            <i data-lucide="pie-chart" class="w-5 h-5 text-blue-500"></i> التوزيع حسب الحالة
-                        </h2>
-                    </div>
-                    
-                    <div class="space-y-5">
-                        <!-- تم إنشاء الشحنة -->
-                        <div>
-                            <div class="flex justify-between text-sm font-bold mb-1">
-                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i> تم إنشاء الشحنة</span>
-                                <span>0</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-gray-400 h-2 rounded-full" style="width: 0%"></div></div>
-                        </div>
-                        <!-- تم الاستلام -->
-                        <div>
-                            <div class="flex justify-between text-sm font-bold mb-1">
-                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="package" class="w-4 h-4 text-blue-500"></i> تم الاستلام من المرسل</span>
-                                <span>2</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-blue-500 h-2 rounded-full" style="width: 33%"></div></div>
-                        </div>
-                        <!-- قيد النقل -->
-                        <div>
-                            <div class="flex justify-between text-sm font-bold mb-1">
-                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="truck" class="w-4 h-4 text-yellow-500"></i> قيد النقل</span>
-                                <span>1</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-yellow-500 h-2 rounded-full" style="width: 16%"></div></div>
-                        </div>
-                        <!-- في مركز الفرز -->
-                        <div>
-                            <div class="flex justify-between text-sm font-bold mb-1">
-                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4 text-purple-500"></i> في مركز الفرز</span>
-                                <span>0</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-purple-500 h-2 rounded-full" style="width: 0%"></div></div>
-                        </div>
-                        <!-- قيد التوصيل -->
-                        <div>
-                            <div class="flex justify-between text-sm font-bold mb-1">
-                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="navigation" class="w-4 h-4 text-pink-500"></i> قيد التوصيل</span>
-                                <span>2</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-pink-500 h-2 rounded-full" style="width: 33%"></div></div>
-                        </div>
-                        <!-- تم التسليم -->
-                        <div>
-                            <div class="flex justify-between text-sm font-bold mb-1">
-                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> تم التسليم</span>
-                                <span>1</span>
-                            </div>
-                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-green-500 h-2 rounded-full" style="width: 16%"></div></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- إجراءات سريعة -->
-                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <h2 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
-                        <i data-lucide="zap" class="w-5 h-5 text-orange-500"></i> إجراءات سريعة
-                    </h2>
-                    <div class="flex flex-col gap-3">
-                        <button class="w-full flex items-center justify-between bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-xl transition-colors">
-                            <span class="font-bold">+ شحنة جديدة</span>
-                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                        </button>
-                        <button class="w-full flex items-center justify-between bg-slate-50 hover:bg-slate-100 text-slate-700 px-4 py-3 rounded-xl transition-colors">
-                            <span class="font-bold">تتبع شحنة</span>
-                            <i data-lucide="search" class="w-5 h-5"></i>
-                        </button>
-                        <button class="w-full flex items-center justify-between bg-slate-50 hover:bg-slate-100 text-slate-700 px-4 py-3 rounded-xl transition-colors">
-                            <span class="font-bold">إدارة الشحنات</span>
-                            <i data-lucide="package" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- أحدث الشحنات (الجدول) -->
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm mt-6 overflow-hidden">
-                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
-                    <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
-                        <i data-lucide="clock" class="w-5 h-5 text-blue-500"></i> أحدث الشحنات
-                    </h2>
-                    <a href="#" class="text-sm font-bold text-blue-600 hover:underline">عرض الكل</a>
-                </div>
-                <table class="w-full text-right">
-                    <thead class="bg-slate-50 text-slate-500 text-xs font-bold">
-                        <tr>
-                            <th class="px-6 py-4">رقم التتبع</th>
-                            <th class="px-6 py-4">المسار</th>
-                            <th class="px-6 py-4">الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 text-sm">
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 font-mono font-bold text-slate-700">STL-4826</td>
-                            <td class="px-6 py-4 text-slate-600">دمشق ← حلب</td>
-                            <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">تم الاستلام من المرسل</span></td>
-                        </tr>
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 font-mono font-bold text-slate-700">STL-4825</td>
-                            <td class="px-6 py-4 text-slate-600">دمشق ← درعا</td>
-                            <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">تم الاستلام من المرسل</span></td>
-                        </tr>
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 font-mono font-bold text-slate-700">STL-4824</td>
-                            <td class="px-6 py-4 text-slate-600">طرطوس ← حماه</td>
-                            <td class="px-6 py-4"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">قيد النقل</span></td>
-                        </tr>
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 font-mono font-bold text-slate-700">STL-4823</td>
-                            <td class="px-6 py-4 text-slate-600">حمص ← اللاذقية</td>
-                            <td class="px-6 py-4"><span class="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-xs font-bold">قيد التوصيل</span></td>
-                        </tr>
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4 font-mono font-bold text-slate-700">STL-4821</td>
-                            <td class="px-6 py-4 text-slate-600">دمشق ← حلب</td>
-                            <td class="px-6 py-4"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">تم التسليم</span></td>
-                        </tr>
+        <div class="bg-white rounded-2xl border shadow-sm p-4 md:p-6 mb-6">
+            <h3 class="font-bold mb-4">أحدث الشحنات</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-sm">
+                    <thead class="text-gray-500 border-b"><tr><th class="pb-3">رقم التتبع</th><th class="pb-3">العميل</th><th class="pb-3">الحالة</th><th class="pb-3">إجراء</th></tr></thead>
+                    <tbody>
+                        ${state.shipments.slice(0,5).map(s => `
+                            <tr class="border-b last:border-0">
+                                <td class="py-3 font-mono font-bold">${s.trackingNumber}</td>
+                                <td class="py-3">${s.name}</td>
+                                <td class="py-3"><span class="px-2 py-1 rounded text-xs ${STATUS_MAP[s.status].color}">${STATUS_MAP[s.status].label}</span></td>
+                                <td class="py-3"><button onclick="state.screen='admin_shipments'; render();" class="text-blue-600 font-bold text-xs">عرض</button></td>
+                            </tr>
+                        `).join('')}
                     </tbody>
                 </table>
             </div>
-
         </div>
-    </main>
+    `;
+}
 
-    <script>
-        lucide.createIcons();
-    </script>
+function renderAdminShipmentsHTML() {
+    return `
+        <div class="bg-white rounded-2xl border shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-sm">
+                    <thead class="bg-slate-50 text-gray-500 border-b"><tr><th class="p-3">التتبع</th><th class="p-3">العميل</th><th class="p-3">الوجهة</th><th class="p-3">المبلغ</th><th class="p-3">الحالة الحالية</th><th class="p-3">تحديث الحالة</th></tr></thead>
+                    <tbody>
+                        ${state.shipments.map((s, index) => `
+                            <tr class="border-b last:border-0 hover:bg-slate-50">
+                                <td class="p-3 font-mono font-bold text-xs">${s.trackingNumber}</td>
+                                <td class="p-3">${s.name}</td>
+                                <td class="p-3 text-xs">${CITIES.find(c=>c.code===s.city)?.name || s.city}</td>
+                                <td class="p-3 font-bold text-red-600">${s.cost.total.toLocaleString()}</td>
+                                <td class="p-3"><span class="px-2 py-1 rounded text-xs ${STATUS_MAP[s.status].color}">${STATUS_MAP[s.status].label}</span></td>
+                                <td class="p-3">
+                                    ${s.status !== 'delivered' 
+                                        ? `<button onclick="advanceStatus(${index})" class="bg-blue-600 text-white text-xs px-3 py-1 rounded-lg">تقديم للمرحلة التالية</button>` 
+                                        : `<span class="text-green-600 text-xs font-bold">مكتملة</span>`}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// دالة تغيير الحالة من لوحة الإدارة
+function advanceStatus(index) {
+    const s = state.shipments[index];
+    const flow = ['created', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
+    const currentIndex = flow.indexOf(s.status);
+    
+    if(currentIndex < flow.length - 1) {
+        s.status = flow[currentIndex + 1];
+        s.events.push({status: s.status, note: `تم التحديث إلى ${STATUS_MAP[s.status].label}`, at: new Date().toISOString()});
+        
+        // إذا تم التسليم، انقل الأموال للمحفظة
+        if(s.status === 'delivered' && s.cod > 0) {
+            state.codPending -= s.cod;
+            state.balance += s.cod;
+            DB.set('codPending', state.codPending);
+            DB.set('balance', state.balance);
+            state.transactions.unshift({type:'تسوية COD', note: s.trackingNumber, amount: s.cod});
+        }
+        
+        DB.set('shipments', state.shipments);
+        DB.set('transactions', state.transactions);
+        toast(`تم تحديث ${s.trackingNumber}`);
+        render();
+    }
+}
+
+// --- المحرك الرئيسي ---
+function render() {
+    if(!state.user) { renderLogin(); return; }
+    
+    if(state.role === 'admin') {
+        renderAdmin();
+    } else {
+        if(state.screen === 'home') renderCustomerHome();
+        else if(state.screen === 'create') renderCustomerCreate();
+        else if(state.screen === 'track') renderCustomerTrack();
+        else if(state.screen === 'wallet') renderCustomerWallet();
+    }
+}
+
+// تشغيل التطبيق
+render();
+</script>
 </body>
-              </html>
-          
+</html>
