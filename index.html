@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#E30613">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>STL — توصيل يليق بك</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Tahoma,sans-serif;background:#f5f5f5;color:#111;padding-bottom:70px;min-height:100vh}
+.container{padding:16px;max-width:500px;margin:0 auto}
+header{background:#E30613;color:#fff;padding:16px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header h1{font-size:18px;font-weight:700}
+header p{font-size:12px;opacity:.9;margin-top:2px}
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;background:#E30613;color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px;font-family:inherit}
+.btn:disabled{opacity:.5}
+.btn-alt{background:#333}
+.input{display:block;width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;font-size:15px;font-family:inherit;background:#fff}
+.label{font-size:13px;font-weight:600;color:#555;margin:8px 0 6px;display:block}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chip{padding:8px 14px;border:1px solid #E30613;border-radius:20px;color:#E30613;font-size:13px;cursor:pointer;background:#fff;font-family:inherit}
+.chip.active{background:#E30613;color:#fff}
+.logo{font-size:56px;font-weight:900;color:#E30613;text-align:center;margin-bottom:8px}
+.tagline{text-align:center;color:#666;font-size:14px;margin-bottom:32px}
+.link{text-align:center;color:#E30613;font-size:14px;margin-top:16px;cursor:pointer}
+.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.tab{flex:1;padding:12px 8px;text-align:center;font-size:11px;color:#888;cursor:pointer;font-family:inherit;background:none;border:none}
+.tab.active{color:#E30613;font-weight:700}
+.tab .icon{display:block;font-size:22px;margin-bottom:2px}
+.shipment{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.shipment .tn{font-family:monospace;font-weight:700;color:#E30613;font-size:13px}
+.shipment .row{display:flex;justify-content:space-between;margin-top:6px;font-size:13px;color:#666}
+.shipment .status{color:#0a7;font-weight:600}
+.shipment .amount{color:#E30613;font-weight:700}
+.empty{text-align:center;color:#999;padding:40px 20px}
+.wallet-card{background:linear-gradient(135deg,#E30613,#b8040f);color:#fff;border-radius:16px;padding:24px;margin-bottom:16px}
+.wallet-card .lbl{opacity:.9;font-size:13px}
+.wallet-card .bal{font-size:34px;font-weight:900;margin:8px 0}
+.wallet-card .pending{opacity:.85;font-size:12px}
+.tx{background:#fff;border-radius:10px;padding:12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.tx .type{font-weight:700}
+.tx .note{color:#666;font-size:11px;margin-top:2px}
+.tx .amt{font-weight:800;font-size:15px}
+.tx .amt.pos{color:#0a7}
+.tx .amt.neg{color:#E30613}
+.timeline{background:#f9f9f9;border-radius:12px;padding:14px;margin-top:12px}
+.event{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #eee}
+.event:last-child{border-bottom:none}
+.event .dot{color:#E30613;font-size:16px}
+.event .st{font-weight:600;font-size:13px}
+.event .note{color:#666;font-size:12px}
+.event .time{color:#999;font-size:11px;margin-top:2px}
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+.alert-box{background:#fff5f5;border:1px solid #ffcccc;color:#c00;padding:12px;border-radius:10px;font-size:13px;margin-bottom:12px;margin-top:16px}
+.quote-box{background:#f0f8f4;border-radius:10px;padding:14px;margin-top:12px}
+.quote-box .total{font-size:22px;font-weight:900;color:#0a7;text-align:center;margin-bottom:8px}
+.quote-box .row{display:flex;justify-content:space-between;font-size:12px;color:#555;margin:4px 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const DB = {
+  get(k, def) { try { return JSON.parse(localStorage.getItem('stl_'+k)) ?? def } catch { return def } },
+  set(k, v) { localStorage.setItem('stl_'+k, JSON.stringify(v)) }
+};
+
+const CITIES = [
+  {code:'DAM',name:'دمشق'}, {code:'RIF',name:'ريف دمشق'}, {code:'ALP',name:'حلب'},
+  {code:'HOM',name:'حمص'}, {code:'HAM',name:'حماة'}, {code:'LAT',name:'اللاذقية'},
+  {code:'TAR',name:'طرطوس'}, {code:'IDL',name:'إدلب'}, {code:'DEZ',name:'دير الزور'},
+  {code:'RAQ',name:'الرقة'}, {code:'HAS',name:'الحسكة'}, {code:'QUN',name:'القنيطرة'}
+];
+const CITY_NAME = c => CITIES.find(x=>x.code===c)?.name || c;
+const STATUS_LBL = {created:'تم الإنشاء',picked_up:'تم الاستلام',in_transit:'قيد النقل',out_for_delivery:'خرج للتوصيل',delivered:'تم التسليم',failed:'فشل',returned:'مرتجع'};
+
+let state = {
+  screen: 'home',
+  user: DB.get('user', null),
+  shipments: DB.get('shipments', []),
+  transactions: DB.get('transactions', []),
+  balance: DB.get('balance', 0),
+  codPending: DB.get('codPending', 0),
+};
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function genTN() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+  let s = 'STL';
+  for (let i=0;i<10;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+
+function calcPrice(toCity, weight, cod, declared) {
+  const zones = {DAM:1,RIF:2,ALP:1,HOM:2,HAM:2,LAT:3,TAR:3,IDL:2,DEZ:4,RAQ:4,HAS:4,QUN:3};
+  const z = zones[toCity] || 1;
+  const mult = {1:1, 2:1.25, 3:1.5, 4:1.8}[z];
+  const base = Math.round(15000 * mult);
+  const weightFee = Math.round(4000 * Math.ceil(weight||1) * (mult - 0.25));
+  const codFee = Math.round((cod||0) * 0.02);
+  const insurance = Math.round((declared||0) * 0.01);
+  return { base, weightFee, codFee, insurance, total: base + weightFee + codFee + insurance };
+}
+
+function render() {
+  const app = document.getElementById('app');
+  if (!state.user) { app.innerHTML = renderLogin(); bindEvents(); return; }
+  const screens = {home:renderHome, create:renderCreate, track:renderTrack, wallet:renderWallet, pricing:renderPricing};
+  const current = screens[state.screen] || renderHome;
+  app.innerHTML = `
+    <header><h1>STL 🚚</h1><p>مرحباً ${state.user?.name || 'مستخدم'}</p></header>
+    ${current()}
+    <nav class="tabs">
+      <button class="tab ${state.screen==='home'?'active':''}" data-screen="home"><span class="icon">🏠</span>الرئيسية</button>
+      <button class="tab ${state.screen==='create'?'active':''}" data-screen="create"><span class="icon">📦</span>شحنة</button>
+      <button class="tab ${state.screen==='track'?'active':''}" data-screen="track"><span class="icon">🔍</span>تتبع</button>
+      <button class="tab ${state.screen==='pricing'?'active':''}" data-screen="pricing"><span class="icon">💰</span>حاسبة</button>
+      <button class="tab ${state.screen==='wallet'?'active':''}" data-screen="wallet"><span class="icon">💳</span>محفظة</button>
+    </nav>
+  `;
+  bindEvents();
+}
+
+function renderLogin() {
+  return `
+    <div class="container" style="padding-top:60px">
+      <div class="logo">STL</div>
+      <div class="tagline">توصيل يليق بك — سوريا</div>
+      <input class="input" id="login-phone" placeholder="رقم الهاتف" inputmode="tel" value="0999111111">
+      <input class="input" id="login-pass" placeholder="كلمة المرور" type="password" value="123456">
+      <button class="btn" id="login-btn">دخول</button>
+      <div class="link" id="register-link">ليس لديك حساب؟ سجّل الآن</div>
+      <div style="margin-top:40px;font-size:11px;color:#999;text-align:center;line-height:1.8">
+        🔒 نسخة تجريبية — البيانات محفوظة على جهازك فقط<br>لا يوجد اتصال بخادم فعلي
+      </div>
+    </div>`;
+}
+
+function renderHome() {
+  const list = state.shipments.length
+    ? state.shipments.map(s => `
+      <div class="shipment">
+        <div class="tn">${s.trackingNumber}</div>
+        <div class="row"><span>إلى: ${s.name}</span><span>${CITY_NAME(s.city)}</span></div>
+        <div class="row"><span class="status">${STATUS_LBL[s.status]||s.status}</span><span class="amount">${s.cost.total.toLocaleString()} ل.س</span></div>
+      </div>`).join('')
+    : `<div class="empty">لا توجد شحنات بعد<br><br>اضغط "شحنة" لإنشاء أول شحنة</div>`;
+  return `
+    <div class="container">
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:13px;color:#666">إجمالي الشحنات</div>
+        <div style="font-size:28px;font-weight:900;color:#E30613">${state.shipments.length}</div></div>
+        <button class="btn" style="width:auto;padding:10px 18px;margin:0" data-screen="create">+ شحنة</button>
+      </div>
+      <h3 style="font-size:16px;margin:16px 0 10px">شحناتي</h3>
+      ${list}
+      <button class="btn btn-alt" id="logout-btn" style="margin-top:20px">تسجيل خروج</button>
+    </div>`;
+}
+
+function renderCreate() {
+  return `
+    <div class="container">
+      <h3 style="font-size:16px;margin-bottom:12px">شحنة جديدة</h3>
+      <input class="input" id="f-name" placeholder="اسم المستلم">
+      <input class="input" id="f-phone" placeholder="هاتف المستلم" inputmode="tel">
+      <label class="label">المدينة (السويداء ودرعا مستبعدتان):</label>
+      <div class="chips" id="city-chips">
+        ${CITIES.map(c => `<div class="chip" data-city="${c.code}">${c.name}</div>`).join('')}
+      </div>
+      <input class="input" id="f-address" placeholder="العنوان الوصفي (حي، شارع، علامة)">
+      <input class="input" id="f-weight" placeholder="الوزن (كغ)" inputmode="decimal" value="1">
+      <input class="input" id="f-cod" placeholder="مبلغ الدفع عند الاستلام (ل.س)" inputmode="numeric">
+      <input class="input" id="f-declared" placeholder="القيمة المعلنة (اختياري)" inputmode="numeric">
+      <button class="btn btn-alt" id="quote-btn">احسب التكلفة</button>
+      <div id="quote-result"></div>
+      <button class="btn" id="submit-shipment" disabled>تأكيد الشحنة</button>
+    </div>`;
+}
+
+function renderTrack() {
+  return `
+    <div class="container">
+      <h3 style="font-size:16px;margin-bottom:12px">تتبع شحنة</h3>
+      <input class="input" id="track-input" placeholder="رقم التتبع (STL...)" style="text-align:center;font-family:monospace">
+      <button class="btn" id="track-btn">تتبع</button>
+      <div id="track-result"></div>
+    </div>`;
+}
+
+function renderWallet() {
+  const txs = state.transactions.length
+    ? state.transactions.map(t => `
+      <div class="tx">
+        <div><div class="type">${t.type}</div><div class="note">${t.note}</div></div>
+        <div class="amt ${t.amount>=0?'pos':'neg'}">${t.amount>=0?'+':''}${t.amount.toLocaleString()}</div>
+      </div>`).join('')
+    : `<div class="empty">لا توجد معاملات</div>`;
+  return `
+    <div class="container">
+      <div class="wallet-card">
+        <div class="lbl">الرصيد المتاح</div>
+        <div class="bal">${state.balance.toLocaleString()} ل.س</div>
+        <div class="pending">قيد التسوية: ${state.codPending.toLocaleString()} ل.س</div>
+      </div>
+      <h3 style="font-size:16px;margin:16px 0 10px">سجل المعاملات</h3>
+      ${txs}
+    </div>`;
+}
+
+function renderPricing() {
+  return `
+    <div class="container">
+      <h3 style="font-size:16px;margin-bottom:12px">حاسبة الشحن</h3>
+      <label class="label">المدينة:</label>
+      <div class="chips" id="p-cities">
+        ${CITIES.map(c => `<div class="chip" data-city="${c.code}">${c.name}</div>`).join('')}
+      </div>
+      <input class="input" id="p-weight" placeholder="الوزن (كغ)" inputmode="decimal" value="1">
+      <input class="input" id="p-cod" placeholder="مبلغ COD (اختياري)" inputmode="numeric">
+      <button class="btn" id="p-calc-btn">احسب</button>
+      <div id="p-result"></div>
+    </div>`;
+}
+
+function bindEvents() {
+  document.querySelectorAll('[data-screen]').forEach(el => {
+    el.onclick = () => { state.screen = el.dataset.screen; render(); };
+  });
+
+  document.getElementById('login-btn')?.addEventListener('click', () => {
+    const phone = document.getElementById('login-phone').value.trim();
+    const pass = document.getElementById('login-pass').value.trim();
+    if (!phone || !pass) return toast('املأ كل الحقول');
+    state.user = { name: 'مستخدم تجريبي', phone };
+    DB.set('user', state.user);
+    state.screen = 'home';
+    render();
+    toast('✅ مرحباً بك');
+  });
+
+  document.getElementById('register-link')?.addEventListener('click', () => {
+    state.user = { name: 'مستخدم تجريبي', phone: '0999111111' };
+    DB.set('user', state.user);
+    state.screen = 'home';
+    render();
+    toast('✅ تم إنشاء الحساب');
+  });
+
+  document.getElementById('logout-btn')?.addEventListener('click', () => {
+    state.user = null;
+    DB.set('user', null);
+    render();
+  });
+
+  document.querySelectorAll('#city-chips .chip').forEach(c => {
+    c.onclick = () => {
+      document.querySelectorAll('#city-chips .chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      window._selectedCity = c.dataset.city;
+      document.getElementById('submit-shipment').disabled = true;
+      document.getElementById('quote-result').innerHTML = '';
+    };
+  });
+
+  document.getElementById('quote-btn')?.addEventListener('click', () => {
+    const city = window._selectedCity;
+    if (!city) return toast('اختر المدينة أولاً');
+    const w = parseFloat(document.getElementById('f-weight').value) || 1;
+    const cod = parseFloat(document.getElementById('f-cod').value) || 0;
+    const dec = parseFloat(document.getElementById('f-declared').value) || 0;
+    const q = calcPrice(city, w, cod, dec);
+    document.getElementById('quote-result').innerHTML = `
+      <div class="quote-box">
+        <div class="total">${q.total.toLocaleString()} ل.س</div>
+        <div class="row"><span>أساسي</span><span>${q.base.toLocaleString()}</span></div>
+        <div class="row"><span>وزن</span><span>${q.weightFee.toLocaleString()}</span></div>
+        <div class="row"><span>COD</span><span>${q.codFee.toLocaleString()}</span></div>
+        <div class="row"><span>تأمين</span><span>${q.insurance.toLocaleString()}</span></div>
+      </div>`;
+    document.getElementById('submit-shipment').disabled = false;
+    window._quote = q;
+  });
+
+  document.getElementById('submit-shipment')?.addEventListener('click', () => {
+    const name = document.getElementById('f-name').value.trim();
+    const phone = document.getElementById('f-phone').value.trim();
+    const address = document.getElementById('f-address').value.trim();
+    const city = window._selectedCity;
+    const w = parseFloat(document.getElementById('f-weight').value) || 1;
+    const cod = parseFloat(document.getElementById('f-cod').value) || 0;
+    if (!name || !phone || !address || !city) return toast('املأ كل الحقول');
+
+    const tn = genTN();
+    const shipment = {
+      trackingNumber: tn, name, phone, city, address, weight: w, cod,
+      cost: window._quote, status: 'created',
+      events: [{status:'created', note:'تم إنشاء الشحنة', at: new Date().toISOString()}],
+      createdAt: new Date().toISOString()
+    };
+    state.shipments.unshift(shipment);
+    DB.set('shipments', state.shipments);
+
+    if (cod > 0) {
+      state.codPending += cod;
+      DB.set('codPending', state.codPending);
+      state.transactions.unshift({ type: 'تحصيل COD (قيد التسوية)', note: tn, amount: cod });
+      DB.set('transactions', state.transactions);
+    }
+
+    setTimeout(() => {
+      shipment.status = 'delivered';
+      shipment.events.push({status:'delivered', note:'تم التسليم (محاكاة)', at: new Date().toISOString()});
+      DB.set('shipments', state.shipments);
+      if (cod > 0) {
+        state.codPending -= cod;
+        state.balance += cod;
+        DB.set('codPending', state.codPending);
+        DB.set('balance', state.balance);
+        state.transactions.unshift({ type: 'تسوية COD', note: `تم تحويل ${cod.toLocaleString()} ل.س للتاجر`, amount: cod });
+        DB.set('transactions', state.transactions);
+      }
+      if (state.screen === 'home' || state.screen === 'wallet') render();
+      toast('🚚 تم تسليم الشحنة (محاكاة)!');
+    }, 5000);
+
+    state.screen = 'home';
+    render();
+    toast('✅ تم إنشاء الشحنة: ' + tn);
+  });
+
+  document.getElementById('track-btn')?.addEventListener('click', () => {
+    const tn = document.getElementById('track-input').value.trim().toUpperCase();
+    const s = state.shipments.find(x => x.trackingNumber === tn);
+    if (!s) {
+      document.getElementById('track-result').innerHTML = `<div class="alert-box">❌ رقم التتبع غير موجود</div>`;
+      return;
+    }
+    document.getElementById('track-result').innerHTML = `
+      <div style="margin-top:16px">
+        <div class="card">
+          <div style="font-family:monospace;color:#E30613;font-weight:700">${s.trackingNumber}</div>
+          <div style="margin-top:8px;font-size:14px">الحالة: <b>${STATUS_LBL[s.status]}</b></div>
+          <div style="margin-top:4px;font-size:14px;color:#666">إلى: ${s.name} — ${CITY_NAME(s.city)}</div>
+        </div>
+        <div class="timeline">
+          ${s.events.map(e => `
+            <div class="event"><div class="dot">●</div><div>
+              <div class="st">${STATUS_LBL[e.status]||e.status}</div>
+              ${e.note?`<div class="note">${e.note}</div>`:''}
+              <div class="time">${new Date(e.at).toLocaleString('ar-SY')}</div>
+            </div></div>`).join('')}
+        </div>
+      </div>`;
+  });
+
+  document.querySelectorAll('#p-cities .chip').forEach(c => {
+    c.onclick = () => {
+      document.querySelectorAll('#p-cities .chip').forEach(x => x.classList.remove('active'));
+      c.classList.add('active');
+      window._pCity = c.dataset.city;
+    };
+  });
+
+  document.getElementById('p-calc-btn')?.addEventListener('click', () => {
+    if (!window._pCity) return toast('اختر المدينة');
+    const w = parseFloat(document.getElementById('p-weight').value) || 1;
+    const cod = parseFloat(document.getElementById('p-cod').value) || 0;
+    const q = calcPrice(window._pCity, w, cod, 0);
+    document.getElementById('p-result').innerHTML = `
+      <div class="quote-box">
+        <div class="total">${q.total.toLocaleString()} ل.س</div>
+        <div class="row"><span>أساسي</span><span>${q.base.toLocaleString()}</span></div>
+        <div class="row"><span>وزن</span><span>${q.weightFee.toLocaleString()}</span></div>
+        <div class="row"><span>COD</span><span>${q.codFee.toLocaleString()}</span></div>
+      </div>`;
+  });
+}
+
+render();
+</script>
+</body>
+  </html>
