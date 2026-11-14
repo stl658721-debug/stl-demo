@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STL — لوحة الإدارة</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+    body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+    /* تخصيص شريط التمرير */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+</style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800">
+
+    <!-- القائمة الجانبية (Sidebar) -->
+    <aside class="w-64 bg-[#0f172a] text-slate-300 flex flex-col shadow-2xl z-20">
+        <!-- الشعار -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-800">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <span class="text-white font-black text-xl">S</span>
+                </div>
+                <span class="text-white font-black text-xl tracking-wider">STL</span>
+            </div>
+        </div>
+
+        <!-- الروابط -->
+        <div class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="#" class="flex items-center gap-3 bg-blue-600 text-white px-4 py-3 rounded-xl transition-all shadow-lg shadow-blue-900/50">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span class="font-bold text-sm">لوحة التحكم</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
+                <i data-lucide="plus-circle" class="w-5 h-5 group-hover:text-blue-400"></i>
+                <span class="font-semibold text-sm">إنشاء شحنة</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
+                <i data-lucide="package" class="w-5 h-5 group-hover:text-blue-400"></i>
+                <span class="font-semibold text-sm">إدارة الشحنات</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
+                <i data-lucide="search" class="w-5 h-5 group-hover:text-blue-400"></i>
+                <span class="font-semibold text-sm">تتبع شحنة</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
+                <i data-lucide="network" class="w-5 h-5 group-hover:text-blue-400"></i>
+                <span class="font-semibold text-sm">شبكة النقاط</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
+                <i data-lucide="map-pin" class="w-5 h-5 group-hover:text-blue-400"></i>
+                <span class="font-semibold text-sm">الخريطة</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
+                <i data-lucide="dollar-sign" class="w-5 h-5 group-hover:text-blue-400"></i>
+                <span class="font-semibold text-sm">الأسعار</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 hover:bg-slate-800 hover:text-white px-4 py-3 rounded-xl transition-all group">
+                <i data-lucide="bar-chart-2" class="w-5 h-5 group-hover:text-blue-400"></i>
+                <span class="font-semibold text-sm">التقارير المالية</span>
+            </a>
+        </div>
+
+        <!-- حساب المدير -->
+        <div class="p-4 border-t border-slate-800">
+            <div class="flex items-center gap-3 bg-slate-800/50 p-3 rounded-xl cursor-pointer hover:bg-slate-800 transition-colors">
+                <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <p class="text-white font-bold text-sm">مدير النظام</p>
+                    <p class="text-xs text-slate-400">admin@stl.sy</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        
+        <!-- الشريط العلوي (Header) -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-10 shadow-sm">
+            <div>
+                <h1 class="text-xl font-black text-slate-800">لوحة التحكم</h1>
+                <p class="text-xs text-slate-500 font-semibold mt-0.5">نظرة عامة على الشبكة</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all active:scale-95">
+                    <i data-lucide="plus" class="w-4 h-4"></i> شحنة جديدة
+                </button>
+                <button class="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all active:scale-95">
+                    <i data-lucide="download" class="w-4 h-4"></i> تصدير
+                </button>
+            </div>
+        </header>
+
+        <!-- منطقة التمرير -->
+        <div class="flex-1 overflow-y-auto p-8">
+            
+            <!-- البطاقات الإحصائية (KPI Cards) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- إجمالي الشحنات -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-blue-500"></div>
+                    <p class="text-sm font-bold text-slate-500 mb-2">إجمالي الشحنات</p>
+                    <div class="flex items-end justify-between">
+                        <h3 class="text-3xl font-black text-slate-800">6</h3>
+                        <span class="flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+                            <i data-lucide="trending-up" class="w-3 h-3"></i> 1 مسلمة
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- قيد التوصيل -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-yellow-500"></div>
+                    <p class="text-sm font-bold text-slate-500 mb-2">قيد التوصيل</p>
+                    <div class="flex items-end justify-between">
+                        <h3 class="text-3xl font-black text-slate-800">5</h3>
+                        <span class="flex items-center gap-1 text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded-lg">
+                            <i data-lucide="clock" class="w-3 h-3"></i> 1 في الطريق
+                        </span>
+                    </div>
+                </div>
+
+                <!-- مبالغ COD -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-red-500"></div>
+                    <p class="text-sm font-bold text-slate-500 mb-2">مبالغ التحصيل (COD)</p>
+                    <div class="flex items-end justify-between">
+                        <h3 class="text-2xl font-black text-slate-800">230,000 <span class="text-sm">ل.س</span></h3>
+                        <span class="text-xs font-bold text-slate-400">3 شحنات</span>
+                    </div>
+                </div>
+
+                <!-- الإيرادات -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                    <div class="absolute right-0 top-0 h-full w-1 bg-green-500"></div>
+                    <p class="text-sm font-bold text-slate-500 mb-2">الإيرادات</p>
+                    <div class="flex items-end justify-between">
+                        <h3 class="text-2xl font-black text-slate-800">348,500 <span class="text-sm">ل.س</span></h3>
+                        <span class="text-xs font-bold text-slate-400">متوسط 58,083 ل.س</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- توزيع الحالات (الرسم البياني) -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm lg:col-span-2">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="w-5 h-5 text-blue-500"></i> التوزيع حسب الحالة
+                        </h2>
+                    </div>
+                    
+                    <div class="space-y-5">
+                        <!-- تم إنشاء الشحنة -->
+                        <div>
+                            <div class="flex justify-between text-sm font-bold mb-1">
+                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="file-text" class="w-4 h-4 text-gray-400"></i> تم إنشاء الشحنة</span>
+                                <span>0</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-gray-400 h-2 rounded-full" style="width: 0%"></div></div>
+                        </div>
+                        <!-- تم الاستلام -->
+                        <div>
+                            <div class="flex justify-between text-sm font-bold mb-1">
+                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="package" class="w-4 h-4 text-blue-500"></i> تم الاستلام من المرسل</span>
+                                <span>2</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-blue-500 h-2 rounded-full" style="width: 33%"></div></div>
+                        </div>
+                        <!-- قيد النقل -->
+                        <div>
+                            <div class="flex justify-between text-sm font-bold mb-1">
+                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="truck" class="w-4 h-4 text-yellow-500"></i> قيد النقل</span>
+                                <span>1</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-yellow-500 h-2 rounded-full" style="width: 16%"></div></div>
+                        </div>
+                        <!-- في مركز الفرز -->
+                        <div>
+                            <div class="flex justify-between text-sm font-bold mb-1">
+                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4 text-purple-500"></i> في مركز الفرز</span>
+                                <span>0</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-purple-500 h-2 rounded-full" style="width: 0%"></div></div>
+                        </div>
+                        <!-- قيد التوصيل -->
+                        <div>
+                            <div class="flex justify-between text-sm font-bold mb-1">
+                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="navigation" class="w-4 h-4 text-pink-500"></i> قيد التوصيل</span>
+                                <span>2</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-pink-500 h-2 rounded-full" style="width: 33%"></div></div>
+                        </div>
+                        <!-- تم التسليم -->
+                        <div>
+                            <div class="flex justify-between text-sm font-bold mb-1">
+                                <span class="text-slate-600 flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> تم التسليم</span>
+                                <span>1</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-green-500 h-2 rounded-full" style="width: 16%"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إجراءات سريعة -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <h2 class="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5 text-orange-500"></i> إجراءات سريعة
+                    </h2>
+                    <div class="flex flex-col gap-3">
+                        <button class="w-full flex items-center justify-between bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-3 rounded-xl transition-colors">
+                            <span class="font-bold">+ شحنة جديدة</span>
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                        </button>
+                        <button class="w-full flex items-center justify-between bg-slate-50 hover:bg-slate-100 text-slate-700 px-4 py-3 rounded-xl transition-colors">
+                            <span class="font-bold">تتبع شحنة</span>
+                            <i data-lucide="search" class="w-5 h-5"></i>
+                        </button>
+                        <button class="w-full flex items-center justify-between bg-slate-50 hover:bg-slate-100 text-slate-700 px-4 py-3 rounded-xl transition-colors">
+                            <span class="font-bold">إدارة الشحنات</span>
+                            <i data-lucide="package" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- أحدث الشحنات (الجدول) -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm mt-6 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                    <h2 class="text-lg font-black text-slate-800 flex items-center gap-2">
+                        <i data-lucide="clock" class="w-5 h-5 text-blue-500"></i> أحدث الشحنات
+                    </h2>
+                    <a href="#" class="text-sm font-bold text-blue-600 hover:underline">عرض الكل</a>
+                </div>
+                <table class="w-full text-right">
+                    <thead class="bg-slate-50 text-slate-500 text-xs font-bold">
+                        <tr>
+                            <th class="px-6 py-4">رقم التتبع</th>
+                            <th class="px-6 py-4">المسار</th>
+                            <th class="px-6 py-4">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-sm">
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 font-mono font-bold text-slate-700">STL-4826</td>
+                            <td class="px-6 py-4 text-slate-600">دمشق ← حلب</td>
+                            <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">تم الاستلام من المرسل</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 font-mono font-bold text-slate-700">STL-4825</td>
+                            <td class="px-6 py-4 text-slate-600">دمشق ← درعا</td>
+                            <td class="px-6 py-4"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">تم الاستلام من المرسل</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 font-mono font-bold text-slate-700">STL-4824</td>
+                            <td class="px-6 py-4 text-slate-600">طرطوس ← حماه</td>
+                            <td class="px-6 py-4"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">قيد النقل</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 font-mono font-bold text-slate-700">STL-4823</td>
+                            <td class="px-6 py-4 text-slate-600">حمص ← اللاذقية</td>
+                            <td class="px-6 py-4"><span class="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-xs font-bold">قيد التوصيل</span></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 font-mono font-bold text-slate-700">STL-4821</td>
+                            <td class="px-6 py-4 text-slate-600">دمشق ← حلب</td>
+                            <td class="px-6 py-4"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">تم التسليم</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+              </html>
+          
