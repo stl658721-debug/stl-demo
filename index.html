@@ -5,392 +5,597 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#E30613">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 <title>STL — توصيل يليق بك</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Tahoma,sans-serif;background:#f5f5f5;color:#111;padding-bottom:70px;min-height:100vh}
-.container{padding:16px;max-width:500px;margin:0 auto}
-header{background:#E30613;color:#fff;padding:16px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15)}
-header h1{font-size:18px;font-weight:700}
-header p{font-size:12px;opacity:.9;margin-top:2px}
-.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-.btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;background:#E30613;color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-top:8px;font-family:inherit}
-.btn:disabled{opacity:.5}
-.btn-alt{background:#333}
-.input{display:block;width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin-bottom:10px;font-size:15px;font-family:inherit;background:#fff}
-.label{font-size:13px;font-weight:600;color:#555;margin:8px 0 6px;display:block}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.chip{padding:8px 14px;border:1px solid #E30613;border-radius:20px;color:#E30613;font-size:13px;cursor:pointer;background:#fff;font-family:inherit}
-.chip.active{background:#E30613;color:#fff}
-.logo{font-size:56px;font-weight:900;color:#E30613;text-align:center;margin-bottom:8px}
-.tagline{text-align:center;color:#666;font-size:14px;margin-bottom:32px}
-.link{text-align:center;color:#E30613;font-size:14px;margin-top:16px;cursor:pointer}
-.tabs{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #eee;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
-.tab{flex:1;padding:12px 8px;text-align:center;font-size:11px;color:#888;cursor:pointer;font-family:inherit;background:none;border:none}
-.tab.active{color:#E30613;font-weight:700}
-.tab .icon{display:block;font-size:22px;margin-bottom:2px}
-.shipment{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.shipment .tn{font-family:monospace;font-weight:700;color:#E30613;font-size:13px}
-.shipment .row{display:flex;justify-content:space-between;margin-top:6px;font-size:13px;color:#666}
-.shipment .status{color:#0a7;font-weight:600}
-.shipment .amount{color:#E30613;font-weight:700}
-.empty{text-align:center;color:#999;padding:40px 20px}
-.wallet-card{background:linear-gradient(135deg,#E30613,#b8040f);color:#fff;border-radius:16px;padding:24px;margin-bottom:16px}
-.wallet-card .lbl{opacity:.9;font-size:13px}
-.wallet-card .bal{font-size:34px;font-weight:900;margin:8px 0}
-.wallet-card .pending{opacity:.85;font-size:12px}
-.tx{background:#fff;border-radius:10px;padding:12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;font-size:13px}
-.tx .type{font-weight:700}
-.tx .note{color:#666;font-size:11px;margin-top:2px}
-.tx .amt{font-weight:800;font-size:15px}
-.tx .amt.pos{color:#0a7}
-.tx .amt.neg{color:#E30613}
-.timeline{background:#f9f9f9;border-radius:12px;padding:14px;margin-top:12px}
-.event{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #eee}
-.event:last-child{border-bottom:none}
-.event .dot{color:#E30613;font-size:16px}
-.event .st{font-weight:600;font-size:13px}
-.event .note{color:#666;font-size:12px}
-.event .time{color:#999;font-size:11px;margin-top:2px}
-.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90%;text-align:center}
-.toast.show{opacity:1}
-.alert-box{background:#fff5f5;border:1px solid #ffcccc;color:#c00;padding:12px;border-radius:10px;font-size:13px;margin-bottom:12px;margin-top:16px}
-.quote-box{background:#f0f8f4;border-radius:10px;padding:14px;margin-top:12px}
-.quote-box .total{font-size:22px;font-weight:900;color:#0a7;text-align:center;margin-bottom:8px}
-.quote-box .row{display:flex;justify-content:space-between;font-size:12px;color:#555;margin:4px 0}
+    body { font-family: 'Cairo', sans-serif; background-color: #F7F9FC; -webkit-tap-highlight-color: transparent; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
-<body>
-<div id="app"></div>
-<div class="toast" id="toast"></div>
+<body class="text-gray-800 pb-24 min-h-screen">
+
+<!-- شاشة البداية / التسجيل -->
+<div id="app" class="max-w-md mx-auto"></div>
+
+<!-- شريط التنقل السفلي -->
+<nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50 hidden">
+    <div class="max-w-md mx-auto flex justify-around items-center h-16">
+        <button onclick="nav('home')" id="nav-home" class="nav-btn flex flex-col items-center w-full text-gray-400 hover:text-red-600 transition-colors">
+            <i data-lucide="home" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-bold">الرئيسية</span>
+        </button>
+        <button onclick="nav('create')" id="nav-create" class="nav-btn flex flex-col items-center w-full text-gray-400 hover:text-red-600 transition-colors">
+            <div class="bg-red-600 text-white p-3 rounded-full -mt-6 shadow-lg shadow-red-200 border-4 border-white">
+                <i data-lucide="plus" class="w-6 h-6"></i>
+            </div>
+        </button>
+        <button onclick="nav('track')" id="nav-track" class="nav-btn flex flex-col items-center w-full text-gray-400 hover:text-red-600 transition-colors">
+            <i data-lucide="map-pin" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-bold">تتبع</span>
+        </button>
+        <button onclick="nav('wallet')" id="nav-wallet" class="nav-btn flex flex-col items-center w-full text-gray-400 hover:text-red-600 transition-colors">
+            <i data-lucide="wallet" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-bold">محفظة</span>
+        </button>
+    </div>
+</nav>
+
+<!-- نظام التنبيهات (Toast) -->
+<div id="toast" class="fixed top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-2xl z-[100] transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2">
+    <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+    <span id="toast-msg">تم بنجاح</span>
+</div>
 
 <script>
+// --- قاعدة البيانات المحلية ---
 const DB = {
-  get(k, def) { try { return JSON.parse(localStorage.getItem('stl_'+k)) ?? def } catch { return def } },
-  set(k, v) { localStorage.setItem('stl_'+k, JSON.stringify(v)) }
+    get: (k, d) => { try { return JSON.parse(localStorage.getItem('stl_'+k)) ?? d } catch { return d } },
+    set: (k, v) => localStorage.setItem('stl_'+k, JSON.stringify(v))
 };
 
 const CITIES = [
-  {code:'DAM',name:'دمشق'}, {code:'RIF',name:'ريف دمشق'}, {code:'ALP',name:'حلب'},
-  {code:'HOM',name:'حمص'}, {code:'HAM',name:'حماة'}, {code:'LAT',name:'اللاذقية'},
-  {code:'TAR',name:'طرطوس'}, {code:'IDL',name:'إدلب'}, {code:'DEZ',name:'دير الزور'},
-  {code:'RAQ',name:'الرقة'}, {code:'HAS',name:'الحسكة'}, {code:'QUN',name:'القنيطرة'}
+    {code:'DAM',name:'دمشق',zone:1}, {code:'RIF',name:'ريف دمشق',zone:2}, {code:'ALP',name:'حلب',zone:1},
+    {code:'HOM',name:'حمص',zone:2}, {code:'HAM',name:'حماة',zone:2}, {code:'LAT',name:'اللاذقية',zone:3},
+    {code:'TAR',name:'طرطوس',zone:3}, {code:'IDL',name:'إدلب',zone:2}, {code:'DEZ',name:'دير الزور',zone:4},
+    {code:'RAQ',name:'الرقة',zone:4}, {code:'HAS',name:'الحسكة',zone:4}, {code:'QUN',name:'القنيطرة',zone:3}
 ];
-const CITY_NAME = c => CITIES.find(x=>x.code===c)?.name || c;
-const STATUS_LBL = {created:'تم الإنشاء',picked_up:'تم الاستلام',in_transit:'قيد النقل',out_for_delivery:'خرج للتوصيل',delivered:'تم التسليم',failed:'فشل',returned:'مرتجع'};
 
-let state = {
-  screen: 'home',
-  user: DB.get('user', null),
-  shipments: DB.get('shipments', []),
-  transactions: DB.get('transactions', []),
-  balance: DB.get('balance', 0),
-  codPending: DB.get('codPending', 0),
+const STATUS_MAP = {
+    created: {label:'تم الإنشاء', color:'bg-blue-100 text-blue-700', icon:'file-text'},
+    picked_up: {label:'تم الاستلام', color:'bg-yellow-100 text-yellow-700', icon:'package'},
+    in_transit: {label:'قيد النقل', color:'bg-indigo-100 text-indigo-700', icon:'truck'},
+    out_for_delivery: {label:'خرج للتوصيل', color:'bg-orange-100 text-orange-700', icon:'navigation'},
+    delivered: {label:'تم التسليم', color:'bg-green-100 text-green-700', icon:'check-circle'}
 };
 
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(window._toastT);
-  window._toastT = setTimeout(() => t.classList.remove('show'), 2500);
+let state = {
+    screen: 'home',
+    user: DB.get('user', null),
+    shipments: DB.get('shipments', []),
+    transactions: DB.get('transactions', []),
+    balance: DB.get('balance', 0),
+    codPending: DB.get('codPending', 0),
+    tempQuote: null,
+    selectedCity: null
+};
+
+// --- أدوات مساعدة ---
+function toast(msg, type='success') {
+    const t = document.getElementById('toast');
+    const icon = type === 'success' ? 'check-circle' : 'alert-circle';
+    const color = type === 'success' ? 'text-green-400' : 'text-red-400';
+    t.innerHTML = `<i data-lucide="${icon}" class="w-5 h-5 ${color}"></i><span id="toast-msg">${msg}</span>`;
+    t.classList.remove('opacity-0', '-translate-y-4');
+    setTimeout(() => t.classList.add('opacity-0', '-translate-y-4'), 3000);
+    lucide.createIcons();
+}
+
+function nav(screen) {
+    state.screen = screen;
+    render();
 }
 
 function genTN() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
-  let s = 'STL';
-  for (let i=0;i<10;i++) s += chars[Math.floor(Math.random()*chars.length)];
-  return s;
+    let s = 'STL';
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';
+    for (let i=0;i<9;i++) s += chars[Math.floor(Math.random()*chars.length)];
+    return s;
 }
 
-function calcPrice(toCity, weight, cod, declared) {
-  const zones = {DAM:1,RIF:2,ALP:1,HOM:2,HAM:2,LAT:3,TAR:3,IDL:2,DEZ:4,RAQ:4,HAS:4,QUN:3};
-  const z = zones[toCity] || 1;
-  const mult = {1:1, 2:1.25, 3:1.5, 4:1.8}[z];
-  const base = Math.round(15000 * mult);
-  const weightFee = Math.round(4000 * Math.ceil(weight||1) * (mult - 0.25));
-  const codFee = Math.round((cod||0) * 0.02);
-  const insurance = Math.round((declared||0) * 0.01);
-  return { base, weightFee, codFee, insurance, total: base + weightFee + codFee + insurance };
+function calcPrice(cityCode, weight, cod, declared) {
+    const city = CITIES.find(c => c.code === cityCode) || CITIES[0];
+    const mult = {1:1, 2:1.25, 3:1.5, 4:1.8}[city.zone];
+    const base = Math.round(15000 * mult);
+    const weightFee = Math.round(4000 * Math.ceil(weight||1) * (mult - 0.25));
+    const codFee = Math.round((cod||0) * 0.02);
+    const insurance = Math.round((declared||0) * 0.01);
+    return { base, weightFee, codFee, insurance, total: base + weightFee + codFee + insurance };
 }
 
-function render() {
-  const app = document.getElementById('app');
-  if (!state.user) { app.innerHTML = renderLogin(); bindEvents(); return; }
-  const screens = {home:renderHome, create:renderCreate, track:renderTrack, wallet:renderWallet, pricing:renderPricing};
-  const current = screens[state.screen] || renderHome;
-  app.innerHTML = `
-    <header><h1>STL 🚚</h1><p>مرحباً ${state.user?.name || 'مستخدم'}</p></header>
-    ${current()}
-    <nav class="tabs">
-      <button class="tab ${state.screen==='home'?'active':''}" data-screen="home"><span class="icon">🏠</span>الرئيسية</button>
-      <button class="tab ${state.screen==='create'?'active':''}" data-screen="create"><span class="icon">📦</span>شحنة</button>
-      <button class="tab ${state.screen==='track'?'active':''}" data-screen="track"><span class="icon">🔍</span>تتبع</button>
-      <button class="tab ${state.screen==='pricing'?'active':''}" data-screen="pricing"><span class="icon">💰</span>حاسبة</button>
-      <button class="tab ${state.screen==='wallet'?'active':''}" data-screen="wallet"><span class="icon">💳</span>محفظة</button>
-    </nav>
-  `;
-  bindEvents();
-}
-
+// --- واجهة تسجيل الدخول ---
 function renderLogin() {
-  return `
-    <div class="container" style="padding-top:60px">
-      <div class="logo">STL</div>
-      <div class="tagline">توصيل يليق بك — سوريا</div>
-      <input class="input" id="login-phone" placeholder="رقم الهاتف" inputmode="tel" value="0999111111">
-      <input class="input" id="login-pass" placeholder="كلمة المرور" type="password" value="123456">
-      <button class="btn" id="login-btn">دخول</button>
-      <div class="link" id="register-link">ليس لديك حساب؟ سجّل الآن</div>
-      <div style="margin-top:40px;font-size:11px;color:#999;text-align:center;line-height:1.8">
-        🔒 نسخة تجريبية — البيانات محفوظة على جهازك فقط<br>لا يوجد اتصال بخادم فعلي
-      </div>
-    </div>`;
+    document.getElementById('bottom-nav').classList.add('hidden');
+    document.getElementById('app').innerHTML = `
+        <div class="min-h-screen flex flex-col justify-center p-6 fade-in">
+            <div class="text-center mb-10">
+                <div class="w-24 h-24 bg-red-600 rounded-3xl mx-auto flex items-center justify-center shadow-xl shadow-red-200 mb-6 transform rotate-3">
+                    <span class="text-white font-black text-4xl transform -rotate-3">STL</span>
+                </div>
+                <h1 class="text-3xl font-black text-gray-800">أهلاً بك مجدداً</h1>
+                <p class="text-gray-500 mt-2">توصيل يليق بك في سوريا</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="relative">
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <i data-lucide="phone" class="w-5 h-5 text-gray-400"></i>
+                    </div>
+                    <input type="tel" id="login-phone" value="0999111111" class="w-full bg-white border border-gray-200 rounded-2xl py-4 pr-12 pl-4 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all font-bold text-gray-700" placeholder="رقم الهاتف">
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <i data-lucide="lock" class="w-5 h-5 text-gray-400"></i>
+                    </div>
+                    <input type="password" id="login-pass" value="123456" class="w-full bg-white border border-gray-200 rounded-2xl py-4 pr-12 pl-4 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all font-bold text-gray-700" placeholder="كلمة المرور">
+                </div>
+                <button onclick="doLogin()" class="w-full bg-red-600 text-white font-bold text-lg rounded-2xl py-4 mt-2 shadow-lg shadow-red-200 active:scale-95 transition-transform">
+                    تسجيل الدخول
+                </button>
+                <p class="text-center text-sm text-gray-500 mt-6">
+                    ليس لديك حساب؟ <span class="text-red-600 font-bold cursor-pointer">تواصل مع الدعم</span>
+                </p>
+            </div>
+        </div>
+    `;
+    lucide.createIcons();
 }
 
+// --- واجهة رئيسية (الرئيسية) ---
 function renderHome() {
-  const list = state.shipments.length
-    ? state.shipments.map(s => `
-      <div class="shipment">
-        <div class="tn">${s.trackingNumber}</div>
-        <div class="row"><span>إلى: ${s.name}</span><span>${CITY_NAME(s.city)}</span></div>
-        <div class="row"><span class="status">${STATUS_LBL[s.status]||s.status}</span><span class="amount">${s.cost.total.toLocaleString()} ل.س</span></div>
-      </div>`).join('')
-    : `<div class="empty">لا توجد شحنات بعد<br><br>اضغط "شحنة" لإنشاء أول شحنة</div>`;
-  return `
-    <div class="container">
-      <div class="card" style="display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-size:13px;color:#666">إجمالي الشحنات</div>
-        <div style="font-size:28px;font-weight:900;color:#E30613">${state.shipments.length}</div></div>
-        <button class="btn" style="width:auto;padding:10px 18px;margin:0" data-screen="create">+ شحنة</button>
-      </div>
-      <h3 style="font-size:16px;margin:16px 0 10px">شحناتي</h3>
-      ${list}
-      <button class="btn btn-alt" id="logout-btn" style="margin-top:20px">تسجيل خروج</button>
-    </div>`;
+    const activeShipments = state.shipments.filter(s => s.status !== 'delivered').length;
+    
+    let shipmentsHtml = state.shipments.length ? state.shipments.slice(0, 5).map(s => `
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 mb-3 flex flex-col gap-3 active:scale-[0.98] transition-transform cursor-pointer" onclick="viewTrack('${s.trackingNumber}')">
+            <div class="flex justify-between items-start">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full ${STATUS_MAP[s.status].color} flex items-center justify-center">
+                        <i data-lucide="${STATUS_MAP[s.status].icon}" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-gray-800 font-mono text-sm">${s.trackingNumber}</div>
+                        <div class="text-xs text-gray-500 mt-1">إلى: ${s.name} - ${CITIES.find(c=>c.code===s.city)?.name}</div>
+                    </div>
+                </div>
+                <span class="text-xs font-bold px-2 py-1 rounded-lg ${STATUS_MAP[s.status].color}">${STATUS_MAP[s.status].label}</span>
+            </div>
+            <div class="border-t border-gray-50 pt-3 flex justify-between items-center mt-1">
+                <span class="text-sm font-black text-gray-800">${s.cost.total.toLocaleString()} <span class="text-xs text-gray-500 font-normal">ل.س</span></span>
+                <span class="text-xs text-red-600 font-bold flex items-center gap-1">عرض التفاصيل <i data-lucide="chevron-left" class="w-4 h-4"></i></span>
+            </div>
+        </div>
+    `).join('') : `
+        <div class="text-center py-10 bg-white rounded-3xl border border-dashed border-gray-300">
+            <div class="w-16 h-16 bg-gray-50 rounded-full mx-auto flex items-center justify-center mb-3">
+                <i data-lucide="box" class="w-8 h-8 text-gray-400"></i>
+            </div>
+            <p class="text-gray-500 font-bold">لا توجد شحنات حالياً</p>
+            <p class="text-xs text-gray-400 mt-1">اضغط على الزر الأحمر لإنشاء شحنة</p>
+        </div>
+    `;
+
+    document.getElementById('app').innerHTML = `
+        <header class="glass sticky top-0 z-40 px-5 py-4 flex justify-between items-center border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-200">
+                    <span class="text-white font-black text-xl">S</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-gray-800 text-lg">STL Express</h1>
+                    <p class="text-[10px] text-gray-500 font-bold">مرحباً، ${state.user.name}</p>
+                </div>
+            </div>
+            <button onclick="logout()" class="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-500">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+            </button>
+        </header>
+        
+        <div class="p-5 fade-in">
+            <!-- البطاقة الرئيسية -->
+            <div class="bg-gradient-to-br from-red-600 to-red-800 rounded-3xl p-6 text-white shadow-xl shadow-red-200/50 mb-6 relative overflow-hidden">
+                <div class="absolute -right-10 -top-10 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <p class="text-red-100 font-bold text-sm mb-1">إجمالي الشحنات النشطة</p>
+                <h2 class="text-5xl font-black mb-4">${activeShipments}</h2>
+                <div class="flex gap-3">
+                    <button onclick="nav('create')" class="flex-1 bg-white text-red-600 font-bold rounded-xl py-3 text-sm shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> شحنة جديدة
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black text-gray-800 text-lg">أحدث الشحنات</h3>
+                <span class="text-xs text-red-600 font-bold cursor-pointer">عرض الكل</span>
+            </div>
+            ${shipmentsHtml}
+        </div>
+    `;
+    lucide.createIcons();
 }
 
+// --- واجهة إنشاء شحنة ---
 function renderCreate() {
-  return `
-    <div class="container">
-      <h3 style="font-size:16px;margin-bottom:12px">شحنة جديدة</h3>
-      <input class="input" id="f-name" placeholder="اسم المستلم">
-      <input class="input" id="f-phone" placeholder="هاتف المستلم" inputmode="tel">
-      <label class="label">المدينة (السويداء ودرعا مستبعدتان):</label>
-      <div class="chips" id="city-chips">
-        ${CITIES.map(c => `<div class="chip" data-city="${c.code}">${c.name}</div>`).join('')}
-      </div>
-      <input class="input" id="f-address" placeholder="العنوان الوصفي (حي، شارع، علامة)">
-      <input class="input" id="f-weight" placeholder="الوزن (كغ)" inputmode="decimal" value="1">
-      <input class="input" id="f-cod" placeholder="مبلغ الدفع عند الاستلام (ل.س)" inputmode="numeric">
-      <input class="input" id="f-declared" placeholder="القيمة المعلنة (اختياري)" inputmode="numeric">
-      <button class="btn btn-alt" id="quote-btn">احسب التكلفة</button>
-      <div id="quote-result"></div>
-      <button class="btn" id="submit-shipment" disabled>تأكيد الشحنة</button>
-    </div>`;
+    const cityChips = CITIES.map(c => `
+        <button onclick="selectCity('${c.code}')" id="city-${c.code}" class="city-chip px-4 py-2 rounded-xl text-sm font-bold border border-gray-200 bg-white text-gray-600 transition-all whitespace-nowrap">
+            ${c.name}
+        </button>
+    `).join('');
+
+    document.getElementById('app').innerHTML = `
+        <header class="glass sticky top-0 z-40 px-5 py-4 flex items-center gap-4 border-b border-gray-100">
+            <button onclick="nav('home')" class="w-10 h-10 bg-white shadow-sm rounded-full flex items-center justify-center text-gray-600">
+                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+            <h1 class="font-bold text-gray-800 text-lg">إنشاء شحنة جديدة</h1>
+        </header>
+
+        <div class="p-5 fade-in pb-10">
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 mb-5">
+                <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="user" class="w-5 h-5 text-red-500"></i> بيانات المستلم
+                </h3>
+                
+                <div class="space-y-3">
+                    <input type="text" id="f-name" placeholder="اسم المستلم الثلاثي" class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 outline-none focus:bg-white focus:border-red-500 transition-all text-sm font-bold">
+                    <input type="tel" id="f-phone" placeholder="رقم الهاتف (09xxxxxxxx)" class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 outline-none focus:bg-white focus:border-red-500 transition-all text-sm font-bold font-mono text-left" dir="ltr">
+                </div>
+
+                <h3 class="font-bold text-gray-800 mt-6 mb-3 flex items-center gap-2">
+                    <i data-lucide="map" class="w-5 h-5 text-red-500"></i> المحافظة
+                </h3>
+                <div class="flex overflow-x-auto gap-2 pb-2 hide-scrollbar">
+                    ${cityChips}
+                </div>
+
+                <h3 class="font-bold text-gray-800 mt-4 mb-3 flex items-center gap-2">
+                    <i data-lucide="map-pin" class="w-5 h-5 text-red-500"></i> العنوان الوصفي
+                </h3>
+                <textarea id="f-address" rows="2" placeholder="الحي، الشارع، أقرب علامة مميزة..." class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 outline-none focus:bg-white focus:border-red-500 transition-all text-sm font-bold resize-none"></textarea>
+            </div>
+
+            <div class="bg-white p-5 rounded-3xl shadow-sm border border-gray-100 mb-5">
+                <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="package" class="w-5 h-5 text-red-500"></i> تفاصيل الشحنة
+                </h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">الوزن (كغ)</label>
+                        <input type="number" id="f-weight" value="1" min="0.5" step="0.5" class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 outline-none focus:bg-white focus:border-red-500 font-bold text-center">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-gray-500 mb-1 block">الدفع عند الاستلام</label>
+                        <input type="number" id="f-cod" placeholder="0" class="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 px-4 outline-none focus:bg-white focus:border-red-500 font-bold text-center">
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="calcQuote()" class="w-full bg-gray-900 text-white font-bold text-lg rounded-2xl py-4 shadow-xl shadow-gray-300 active:scale-95 transition-transform flex items-center justify-center gap-2">
+                <i data-lucide="calculator" class="w-5 h-5"></i> احسب التكلفة
+            </button>
+
+            <div id="quote-result" class="mt-5 hidden"></div>
+
+        </div>
+    `;
+    lucide.createIcons();
+    // إعادة تحديد المدينة إذا كانت مختارة
+    if(state.selectedCity) selectCity(state.selectedCity);
 }
 
-function renderTrack() {
-  return `
-    <div class="container">
-      <h3 style="font-size:16px;margin-bottom:12px">تتبع شحنة</h3>
-      <input class="input" id="track-input" placeholder="رقم التتبع (STL...)" style="text-align:center;font-family:monospace">
-      <button class="btn" id="track-btn">تتبع</button>
-      <div id="track-result"></div>
-    </div>`;
+function selectCity(code) {
+    state.selectedCity = code;
+    document.querySelectorAll('.city-chip').forEach(el => {
+        el.classList.remove('bg-red-600', 'text-white', 'border-red-600', 'shadow-md', 'shadow-red-200');
+        el.classList.add('bg-white', 'text-gray-600', 'border-gray-200');
+    });
+    const active = document.getElementById('city-'+code);
+    if(active){
+        active.classList.remove('bg-white', 'text-gray-600', 'border-gray-200');
+        active.classList.add('bg-red-600', 'text-white', 'border-red-600', 'shadow-md', 'shadow-red-200');
+    }
 }
 
-function renderWallet() {
-  const txs = state.transactions.length
-    ? state.transactions.map(t => `
-      <div class="tx">
-        <div><div class="type">${t.type}</div><div class="note">${t.note}</div></div>
-        <div class="amt ${t.amount>=0?'pos':'neg'}">${t.amount>=0?'+':''}${t.amount.toLocaleString()}</div>
-      </div>`).join('')
-    : `<div class="empty">لا توجد معاملات</div>`;
-  return `
-    <div class="container">
-      <div class="wallet-card">
-        <div class="lbl">الرصيد المتاح</div>
-        <div class="bal">${state.balance.toLocaleString()} ل.س</div>
-        <div class="pending">قيد التسوية: ${state.codPending.toLocaleString()} ل.س</div>
-      </div>
-      <h3 style="font-size:16px;margin:16px 0 10px">سجل المعاملات</h3>
-      ${txs}
-    </div>`;
-}
-
-function renderPricing() {
-  return `
-    <div class="container">
-      <h3 style="font-size:16px;margin-bottom:12px">حاسبة الشحن</h3>
-      <label class="label">المدينة:</label>
-      <div class="chips" id="p-cities">
-        ${CITIES.map(c => `<div class="chip" data-city="${c.code}">${c.name}</div>`).join('')}
-      </div>
-      <input class="input" id="p-weight" placeholder="الوزن (كغ)" inputmode="decimal" value="1">
-      <input class="input" id="p-cod" placeholder="مبلغ COD (اختياري)" inputmode="numeric">
-      <button class="btn" id="p-calc-btn">احسب</button>
-      <div id="p-result"></div>
-    </div>`;
-}
-
-function bindEvents() {
-  document.querySelectorAll('[data-screen]').forEach(el => {
-    el.onclick = () => { state.screen = el.dataset.screen; render(); };
-  });
-
-  document.getElementById('login-btn')?.addEventListener('click', () => {
-    const phone = document.getElementById('login-phone').value.trim();
-    const pass = document.getElementById('login-pass').value.trim();
-    if (!phone || !pass) return toast('املأ كل الحقول');
-    state.user = { name: 'مستخدم تجريبي', phone };
-    DB.set('user', state.user);
-    state.screen = 'home';
-    render();
-    toast('✅ مرحباً بك');
-  });
-
-  document.getElementById('register-link')?.addEventListener('click', () => {
-    state.user = { name: 'مستخدم تجريبي', phone: '0999111111' };
-    DB.set('user', state.user);
-    state.screen = 'home';
-    render();
-    toast('✅ تم إنشاء الحساب');
-  });
-
-  document.getElementById('logout-btn')?.addEventListener('click', () => {
-    state.user = null;
-    DB.set('user', null);
-    render();
-  });
-
-  document.querySelectorAll('#city-chips .chip').forEach(c => {
-    c.onclick = () => {
-      document.querySelectorAll('#city-chips .chip').forEach(x => x.classList.remove('active'));
-      c.classList.add('active');
-      window._selectedCity = c.dataset.city;
-      document.getElementById('submit-shipment').disabled = true;
-      document.getElementById('quote-result').innerHTML = '';
-    };
-  });
-
-  document.getElementById('quote-btn')?.addEventListener('click', () => {
-    const city = window._selectedCity;
-    if (!city) return toast('اختر المدينة أولاً');
-    const w = parseFloat(document.getElementById('f-weight').value) || 1;
+function calcQuote() {
+    const name = document.getElementById('f-name').value;
+    const phone = document.getElementById('f-phone').value;
+    const address = document.getElementById('f-address').value;
+    const weight = parseFloat(document.getElementById('f-weight').value) || 1;
     const cod = parseFloat(document.getElementById('f-cod').value) || 0;
-    const dec = parseFloat(document.getElementById('f-declared').value) || 0;
-    const q = calcPrice(city, w, cod, dec);
-    document.getElementById('quote-result').innerHTML = `
-      <div class="quote-box">
-        <div class="total">${q.total.toLocaleString()} ل.س</div>
-        <div class="row"><span>أساسي</span><span>${q.base.toLocaleString()}</span></div>
-        <div class="row"><span>وزن</span><span>${q.weightFee.toLocaleString()}</span></div>
-        <div class="row"><span>COD</span><span>${q.codFee.toLocaleString()}</span></div>
-        <div class="row"><span>تأمين</span><span>${q.insurance.toLocaleString()}</span></div>
-      </div>`;
-    document.getElementById('submit-shipment').disabled = false;
-    window._quote = q;
-  });
 
-  document.getElementById('submit-shipment')?.addEventListener('click', () => {
-    const name = document.getElementById('f-name').value.trim();
-    const phone = document.getElementById('f-phone').value.trim();
-    const address = document.getElementById('f-address').value.trim();
-    const city = window._selectedCity;
-    const w = parseFloat(document.getElementById('f-weight').value) || 1;
-    const cod = parseFloat(document.getElementById('f-cod').value) || 0;
-    if (!name || !phone || !address || !city) return toast('املأ كل الحقول');
+    if(!name || !phone || !address || !state.selectedCity) {
+        return toast('يرجى تعبئة جميع الحقول المطلوبة', 'error');
+    }
 
+    const quote = calcPrice(state.selectedCity, weight, cod, 0);
+    state.tempQuote = quote;
+    state.tempData = { name, phone, address, weight, cod };
+
+    const box = document.getElementById('quote-result');
+    box.classList.remove('hidden');
+    box.innerHTML = `
+        <div class="bg-red-50 rounded-3xl p-6 border border-red-100 fade-in">
+            <div class="flex justify-between items-center border-b border-red-100 pb-3 mb-3">
+                <span class="font-bold text-gray-600">التكلفة الإجمالية</span>
+                <span class="font-black text-2xl text-red-600">${quote.total.toLocaleString()} <span class="text-sm">ل.س</span></span>
+            </div>
+            <div class="space-y-2 mb-5">
+                <div class="flex justify-between text-sm text-gray-500"><span>التسعيرة الأساسية</span><span class="font-mono">${quote.base.toLocaleString()}</span></div>
+                <div class="flex justify-between text-sm text-gray-500"><span>رسوم الوزن (${weight} كغ)</span><span class="font-mono">${quote.weightFee.toLocaleString()}</span></div>
+                ${cod > 0 ? `<div class="flex justify-between text-sm text-gray-500"><span>رسوم التحصيل (COD)</span><span class="font-mono">${quote.codFee.toLocaleString()}</span></div>` : ''}
+            </div>
+            <button onclick="submitShipment()" class="w-full bg-red-600 text-white font-bold text-lg rounded-xl py-3 shadow-lg shadow-red-200 active:scale-95 transition-transform">
+                تأكيد وإنشاء الشحنة
+            </button>
+        </div>
+    `;
+    // سحب الشاشة لأسفل لرؤية النتيجة
+    box.scrollIntoView({ behavior: 'smooth' });
+}
+
+function submitShipment() {
     const tn = genTN();
+    const { name, phone, address, weight, cod } = state.tempData;
+    
     const shipment = {
-      trackingNumber: tn, name, phone, city, address, weight: w, cod,
-      cost: window._quote, status: 'created',
-      events: [{status:'created', note:'تم إنشاء الشحنة', at: new Date().toISOString()}],
-      createdAt: new Date().toISOString()
+        trackingNumber: tn, name, phone, address, weight, cod,
+        city: state.selectedCity,
+        cost: state.tempQuote, 
+        status: 'created',
+        events: [{status:'created', note:'تم إنشاء الشحنة بنجاح', at: new Date().toISOString()}],
+        createdAt: new Date().toISOString()
     };
+    
     state.shipments.unshift(shipment);
     DB.set('shipments', state.shipments);
 
-    if (cod > 0) {
-      state.codPending += cod;
-      DB.set('codPending', state.codPending);
-      state.transactions.unshift({ type: 'تحصيل COD (قيد التسوية)', note: tn, amount: cod });
-      DB.set('transactions', state.transactions);
-    }
+    // محاكاة التتبع (للعرض التجريبي)
+    setTimeout(() => {
+        shipment.status = 'picked_up';
+        shipment.events.push({status:'picked_up', note:'تم استلام الشحنة من قبل المندوب', at: new Date().toISOString()});
+        DB.set('shipments', state.shipments);
+    }, 8000);
 
     setTimeout(() => {
-      shipment.status = 'delivered';
-      shipment.events.push({status:'delivered', note:'تم التسليم (محاكاة)', at: new Date().toISOString()});
-      DB.set('shipments', state.shipments);
-      if (cod > 0) {
-        state.codPending -= cod;
-        state.balance += cod;
-        DB.set('codPending', state.codPending);
-        DB.set('balance', state.balance);
-        state.transactions.unshift({ type: 'تسوية COD', note: `تم تحويل ${cod.toLocaleString()} ل.س للتاجر`, amount: cod });
-        DB.set('transactions', state.transactions);
-      }
-      if (state.screen === 'home' || state.screen === 'wallet') render();
-      toast('🚚 تم تسليم الشحنة (محاكاة)!');
-    }, 5000);
+        shipment.status = 'delivered';
+        shipment.events.push({status:'delivered', note:'تم التسليم للمستلم', at: new Date().toISOString()});
+        DB.set('shipments', state.shipments);
+        
+        if (cod > 0) {
+            state.codPending -= cod;
+            state.balance += cod;
+            DB.set('codPending', state.codPending);
+            DB.set('balance', state.balance);
+            state.transactions.unshift({ type: 'تسوية أرباح', note: `تحصيل شحنة ${tn}`, amount: cod, date: new Date().toISOString() });
+            DB.set('transactions', state.transactions);
+        }
+    }, 15000);
 
+    if (cod > 0) {
+        state.codPending += cod;
+        DB.set('codPending', state.codPending);
+        state.transactions.unshift({ type: 'تحصيل COD (قيد التسوية)', note: `في انتظار التسليم - ${tn}`, amount: cod, date: new Date().toISOString() });
+        DB.set('transactions', state.transactions);
+    }
+
+    state.selectedCity = null;
+    toast('تم إنشاء الشحنة بنجاح!');
     state.screen = 'home';
     render();
-    toast('✅ تم إنشاء الشحنة: ' + tn);
-  });
-
-  document.getElementById('track-btn')?.addEventListener('click', () => {
-    const tn = document.getElementById('track-input').value.trim().toUpperCase();
-    const s = state.shipments.find(x => x.trackingNumber === tn);
-    if (!s) {
-      document.getElementById('track-result').innerHTML = `<div class="alert-box">❌ رقم التتبع غير موجود</div>`;
-      return;
-    }
-    document.getElementById('track-result').innerHTML = `
-      <div style="margin-top:16px">
-        <div class="card">
-          <div style="font-family:monospace;color:#E30613;font-weight:700">${s.trackingNumber}</div>
-          <div style="margin-top:8px;font-size:14px">الحالة: <b>${STATUS_LBL[s.status]}</b></div>
-          <div style="margin-top:4px;font-size:14px;color:#666">إلى: ${s.name} — ${CITY_NAME(s.city)}</div>
-        </div>
-        <div class="timeline">
-          ${s.events.map(e => `
-            <div class="event"><div class="dot">●</div><div>
-              <div class="st">${STATUS_LBL[e.status]||e.status}</div>
-              ${e.note?`<div class="note">${e.note}</div>`:''}
-              <div class="time">${new Date(e.at).toLocaleString('ar-SY')}</div>
-            </div></div>`).join('')}
-        </div>
-      </div>`;
-  });
-
-  document.querySelectorAll('#p-cities .chip').forEach(c => {
-    c.onclick = () => {
-      document.querySelectorAll('#p-cities .chip').forEach(x => x.classList.remove('active'));
-      c.classList.add('active');
-      window._pCity = c.dataset.city;
-    };
-  });
-
-  document.getElementById('p-calc-btn')?.addEventListener('click', () => {
-    if (!window._pCity) return toast('اختر المدينة');
-    const w = parseFloat(document.getElementById('p-weight').value) || 1;
-    const cod = parseFloat(document.getElementById('p-cod').value) || 0;
-    const q = calcPrice(window._pCity, w, cod, 0);
-    document.getElementById('p-result').innerHTML = `
-      <div class="quote-box">
-        <div class="total">${q.total.toLocaleString()} ل.س</div>
-        <div class="row"><span>أساسي</span><span>${q.base.toLocaleString()}</span></div>
-        <div class="row"><span>وزن</span><span>${q.weightFee.toLocaleString()}</span></div>
-        <div class="row"><span>COD</span><span>${q.codFee.toLocaleString()}</span></div>
-      </div>`;
-  });
 }
 
+// --- واجهة التتبع ---
+function renderTrack() {
+    document.getElementById('app').innerHTML = `
+        <header class="glass sticky top-0 z-40 px-5 py-4 flex items-center border-b border-gray-100">
+            <h1 class="font-bold text-gray-800 text-lg mx-auto">تتبع الشحنات</h1>
+        </header>
+
+        <div class="p-5 fade-in">
+            <div class="flex gap-2 mb-6">
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                        <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+                    </div>
+                    <input type="text" id="track-input" placeholder="أدخل رقم الشحنة (STL...)" class="w-full bg-white border border-gray-200 rounded-2xl py-4 pr-12 pl-4 outline-none focus:border-red-500 font-mono font-bold text-sm text-center tracking-widest">
+                </div>
+                <button onclick="doTrack()" class="bg-gray-900 text-white px-6 rounded-2xl shadow-lg active:scale-95 transition-transform">
+                    بحث
+                </button>
+            </div>
+
+            <div id="track-result"></div>
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+function viewTrack(tn) {
+    state.screen = 'track';
+    render();
+    document.getElementById('track-input').value = tn;
+    doTrack();
+}
+
+function doTrack() {
+    const tn = document.getElementById('track-input').value.trim().toUpperCase();
+    const s = state.shipments.find(x => x.trackingNumber === tn);
+    const res = document.getElementById('track-result');
+
+    if (!s) {
+        res.innerHTML = `
+            <div class="text-center py-10 bg-red-50 rounded-3xl border border-red-100 mt-4">
+                <i data-lucide="alert-circle" class="w-12 h-12 text-red-500 mx-auto mb-3"></i>
+                <p class="text-red-800 font-bold">رقم التتبع غير موجود أو خاطئ</p>
+            </div>
+        `;
+        lucide.createIcons();
+        return;
+    }
+
+    // بناء الخط الزمني (Timeline)
+    const timeline = s.events.map((e, i) => {
+        const isLast = i === s.events.length - 1;
+        const st = STATUS_MAP[e.status] || {label: e.status, icon: 'circle'};
+        return `
+            <div class="flex gap-4 relative">
+                ${!isLast ? '<div class="absolute right-5 top-10 bottom-0 w-0.5 bg-gray-200"></div>' : ''}
+                <div class="w-10 h-10 rounded-full ${isLast ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'bg-gray-100 text-gray-500'} flex items-center justify-center shrink-0 z-10">
+                    <i data-lucide="${st.icon}" class="w-5 h-5"></i>
+                </div>
+                <div class="pb-6">
+                    <h4 class="font-bold ${isLast ? 'text-red-600' : 'text-gray-800'}">${st.label}</h4>
+                    <p class="text-sm text-gray-500 mt-1">${e.note}</p>
+                    <p class="text-[10px] text-gray-400 font-mono mt-1">${new Date(e.at).toLocaleString('ar-SY')}</p>
+                </div>
+            </div>
+        `;
+    }).reverse().join(''); // الأحدث في الأعلى
+
+    res.innerHTML = `
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6 fade-in">
+            <div class="flex justify-between items-start mb-4 pb-4 border-b border-gray-100">
+                <div>
+                    <p class="text-xs font-bold text-gray-400 mb-1">رقم الشحنة</p>
+                    <h3 class="font-black font-mono text-xl text-gray-800">${s.trackingNumber}</h3>
+                </div>
+                <div class="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center">
+                    <i data-lucide="box" class="w-6 h-6 text-gray-600"></i>
+                </div>
+            </div>
+            <div class="flex justify-between text-sm">
+                <div><p class="text-xs text-gray-400">المستلم</p><p class="font-bold">${s.name}</p></div>
+                <div class="text-left"><p class="text-xs text-gray-400">الوجهة</p><p class="font-bold">${CITIES.find(c=>c.code===s.city)?.name}</p></div>
+            </div>
+        </div>
+
+        <h3 class="font-black text-gray-800 text-lg mb-4 px-2">حالة الشحنة</h3>
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 fade-in">
+            ${timeline}
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+// --- واجهة المحفظة ---
+function renderWallet() {
+    const txs = state.transactions.length ? state.transactions.map(t => `
+        <div class="flex items-center justify-between p-4 bg-white rounded-2xl mb-2 border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full ${t.amount > 0 ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'} flex items-center justify-center">
+                    <i data-lucide="${t.amount > 0 ? 'arrow-down-left' : 'arrow-up-right'}" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-sm text-gray-800">${t.type}</p>
+                    <p class="text-xs text-gray-500">${t.note}</p>
+                </div>
+            </div>
+            <span class="font-black font-mono ${t.amount > 0 ? 'text-green-600' : 'text-red-600'}">
+                ${t.amount > 0 ? '+' : ''}${t.amount.toLocaleString()}
+            </span>
+        </div>
+    `).join('') : `
+        <div class="text-center py-8 text-gray-400">
+            <i data-lucide="receipt" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
+            <p class="text-sm">لا توجد حركات مالية</p>
+        </div>
+    `;
+
+    document.getElementById('app').innerHTML = `
+        <header class="glass sticky top-0 z-40 px-5 py-4 flex items-center border-b border-gray-100">
+            <h1 class="font-bold text-gray-800 text-lg mx-auto">المحفظة</h1>
+        </header>
+
+        <div class="p-5 fade-in">
+            <!-- بطاقة الرصيد -->
+            <div class="bg-gray-900 rounded-3xl p-6 text-white shadow-2xl mb-6 relative overflow-hidden">
+                <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <p class="text-gray-400 text-sm mb-1">الرصيد المتاح للسحب</p>
+                            <h2 class="text-4xl font-black font-mono">${state.balance.toLocaleString()} <span class="text-lg text-gray-400 font-sans">ل.س</span></h2>
+                        </div>
+                        <i data-lucide="credit-card" class="w-8 h-8 text-gray-400"></i>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <p class="text-xs text-yellow-500 font-bold mb-1 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> قيد التسوية</p>
+                            <p class="font-bold font-mono text-yellow-500">${state.codPending.toLocaleString()} ل.س</p>
+                        </div>
+                        <button onclick="toast('سحب الأرباح غير متاح في النسخة التجريبية', 'error')" class="bg-white/10 hover:bg-white/20 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors border border-white/10">
+                            سحب
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="font-black text-gray-800 text-lg mb-4 px-2">سجل المعاملات</h3>
+            ${txs}
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+// --- محرك العرض الرئيسي ---
+function render() {
+    if (!state.user) {
+        renderLogin();
+        return;
+    }
+
+    document.getElementById('bottom-nav').classList.remove('hidden');
+    
+    // تحديث الشريط السفلي
+    ['home', 'create', 'track', 'wallet'].forEach(s => {
+        const btn = document.getElementById('nav-'+s);
+        if(s === state.screen) {
+            btn.classList.add('text-red-600');
+            btn.classList.remove('text-gray-400');
+        } else {
+            btn.classList.remove('text-red-600');
+            btn.classList.add('text-gray-400');
+        }
+    });
+
+    if (state.screen === 'home') renderHome();
+    else if (state.screen === 'create') renderCreate();
+    else if (state.screen === 'track') renderTrack();
+    else if (state.screen === 'wallet') renderWallet();
+    
+    // التمرير للأعلى عند تغيير الصفحة
+    window.scrollTo(0,0);
+}
+
+function doLogin() {
+    const phone = document.getElementById('login-phone').value;
+    if(!phone) return toast('أدخل رقم الهاتف', 'error');
+    state.user = { name: 'أبو محمد', phone: phone };
+    DB.set('user', state.user);
+    render();
+}
+
+function logout() {
+    state.user = null;
+    DB.set('user', null);
+    render();
+}
+
+// تشغيل التطبيق
 render();
+lucide.createIcons();
 </script>
 </body>
-  </html>
+</html>
